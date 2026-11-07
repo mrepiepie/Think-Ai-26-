@@ -7,7 +7,7 @@ export function Footer() {
         marked “Sample data” use placeholder content.
       </span>
       <span className="ml-auto">
-        Map data: US Census Bureau (us-atlas) · Natural Earth (world-atlas)
+        Map data: US Census Bureau (us-atlas) · Natural Earth (India point-of-view)
       </span>
     </footer>
   );

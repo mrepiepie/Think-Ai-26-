@@ -46,5 +46,6 @@ export function useTopology(url: string | null): Topology | null {
 export const GEO = {
   states: "/geo/states-10m.json",
   counties: "/geo/counties-10m.json",
-  world: "/geo/countries-110m.json",
+  // Natural Earth admin-0 countries, India point-of-view ("ind"), simplified.
+  world: "/geo/countries-ind.json",
 } as const;

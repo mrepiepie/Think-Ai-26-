@@ -22,7 +22,6 @@ type UsTopology = Topology<{
 
 type WorldTopology = Topology<{
   countries: GeometryCollection<{ name: string }>;
-  land: GeometryCollection;
 }>;
 
 /** US states (Census-based us-atlas), with FIPS -> USPS code attached. */
