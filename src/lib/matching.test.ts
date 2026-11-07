@@ -1,8 +1,11 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
+import { STATUS_LABEL } from "./compliance";
 import {
   LAW_RULES,
+  checkboxLabel,
   classifyAddressee,
+  statusLabelFor,
   matchCompany,
   rollupByJurisdiction,
   ruleCardItem,
@@ -233,6 +236,46 @@ describe("delivery app using location in Illinois", () => {
     assert.equal(il.applies, false);
     assert.equal(il.applicable.length, 0);
     assert.equal(rollupByJurisdiction(matchCompany(profile), profile, none, TODAY).IL.status, "not-applicable");
+  });
+});
+
+describe("status wording", () => {
+  const matches = matchCompany(EXAMPLE);
+
+  it("uses action wording, never compliant / non-compliant", () => {
+    const r = rollupByJurisdiction(matches, EXAMPLE, none, TODAY);
+    assert.equal(r.NYC.label, "Action needed now");
+    assert.equal(r.CO.label, "Action needed by Jan 1, 2027");
+    assert.equal(r.NY.label, "Not applicable");
+    const nyc = byId(matches, "nyc-ll144");
+    const all = new Set(nyc.applicable.map((d) => d.id));
+    assert.equal(rollupByJurisdiction(matches, EXAMPLE, all, TODAY).NYC.label, "All confirmed");
+    const labels = [...Object.values(STATUS_LABEL), ...Object.values(r).map((x) => x.label)];
+    for (const l of labels) assert.doesNotMatch(l, /compliant/i);
+  });
+
+  it("amber date is the earliest unchecked future duty", () => {
+    const profile: ConfirmedProfile = {
+      role: "deployer",
+      features: ["companion_chatbot", "chatbot_used_by_minors"],
+      jurisdictions: ["CA"],
+      isGovernment: false,
+    };
+    const sb243 = byId(matchCompany(profile), "ca-sb243");
+    const inForce = new Set(sb243.applicable.filter((d) => d.effectiveDate <= TODAY).map((d) => d.id));
+    assert.equal(statusLabelFor([sb243], inForce, TODAY), "Action needed by Jul 1, 2027");
+  });
+
+  it("prohibitions read as 'Confirm you don't:'", () => {
+    assert.equal(
+      checkboxLabel("May not develop or deploy AI to unlawfully discriminate against a protected class."),
+      "Confirm you don't: develop or deploy AI to unlawfully discriminate against a protected class.",
+    );
+    assert.equal(checkboxLabel("Do not use ZIP codes as a proxy"), "Confirm you don't: use ZIP codes as a proxy");
+    assert.match(checkboxLabel("Person must not develop or distribute AI that simulates..."), /^Confirm you don't: develop/);
+    assert.equal(checkboxLabel("Publish a safety framework"), "Publish a safety framework");
+    const tx = byId(matches, "tx-traiga");
+    for (const d of tx.applicable) assert.match(checkboxLabel(d.text), /^Confirm you don't: /, d.id);
   });
 });
 

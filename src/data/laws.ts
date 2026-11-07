@@ -17,7 +17,8 @@ export const LAWS: Law[] = [
     jurisdiction: "New York City",
     state: "NY",
     tags: ["in-force"],
-    effective: "Enforced since July 2023",
+    // Logic uses the rule-card date (effectiveDate/0, Jan 1, 2023); the PRD gives the enforcement start.
+    effective: "In effect Jan 1, 2023 (law text) · Enforced since July 2023 (PRD source)",
     effectiveDate: "2023-07-01",
     appliesTo: "Employers using AI hiring tools in New York City",
     summary:

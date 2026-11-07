@@ -19,8 +19,8 @@ export function StatusDot({
   );
 }
 
-/** Coloured status label: compliant / action soon / non-compliant / n.a. */
-export function StatusPill({ status }: { status: ComplianceStatus }) {
+/** Coloured status label; `label` overrides the generic text (e.g. with a date). */
+export function StatusPill({ status, label }: { status: ComplianceStatus; label?: string }) {
   const color = STATUS_COLOR[status];
   return (
     <span
@@ -32,7 +32,7 @@ export function StatusPill({ status }: { status: ComplianceStatus }) {
       }}
     >
       <StatusDot status={status} className="size-1.5" />
-      {STATUS_LABEL[status]}
+      {label ?? STATUS_LABEL[status]}
     </span>
   );
 }

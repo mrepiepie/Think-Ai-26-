@@ -54,12 +54,12 @@ export function ComplianceMapPanel({
           <StatusDot status={r?.status ?? null} />
           {jurisdictionName(key)}
           <span className="font-mono text-[10px] text-muted-foreground uppercase">
-            {r ? STATUS_LABEL[r.status] : "No tracked laws"}
+            {r ? r.label : "No tracked laws"}
           </span>
         </div>
         {r?.laws.map((l) => (
           <div key={l.law.id} className="text-[11px] text-muted-foreground">
-            {l.law.name}: {STATUS_LABEL[r.lawStatus[l.law.id]].toLowerCase()}
+            {l.law.name}: {r.lawLabel[l.law.id].toLowerCase()}
           </div>
         ))}
         {r && r.needsReview > 0 && (

@@ -6,7 +6,8 @@ import { Button, buttonVariants } from "@/components/ui/button";
 import { readTheLawLink, verifiedRules } from "@/data/law-library";
 import { jurisdictionName } from "@/data/states";
 import type { ComplianceStatus } from "@/data/types";
-import type { Duty, JurisdictionRollup, LawMatch } from "@/lib/matching";
+import { formatDay } from "@/lib/compliance";
+import { checkboxLabel, type Duty, type JurisdictionRollup, type LawMatch } from "@/lib/matching";
 import { noticeQuotes } from "@/lib/notice";
 import type { RuleItem } from "@/lib/rule-card";
 import { cn } from "@/lib/utils";
@@ -57,7 +58,7 @@ export function StateChecklist({
                 )}
               </div>
             </div>
-            {rollup && <StatusPill status={rollup.status} />}
+            {rollup && <StatusPill status={rollup.status} label={rollup.label} />}
           </div>
           {!rollup ? (
             <EmptyState text="No tracked laws for this jurisdiction, or they are hidden by your filters." />
@@ -69,6 +70,7 @@ export function StateChecklist({
                     key={m.law.id}
                     match={m}
                     status={rollup.lawStatus[m.law.id]}
+                    statusLabel={rollup.lawLabel[m.law.id]}
                     checked={checked}
                     onToggle={onToggle}
                     today={today}
@@ -100,6 +102,7 @@ export function StateChecklist({
 function LawCard({
   match,
   status,
+  statusLabel,
   checked,
   onToggle,
   today,
@@ -107,6 +110,7 @@ function LawCard({
 }: {
   match: LawMatch;
   status: ComplianceStatus;
+  statusLabel: string;
   checked: ReadonlySet<string>;
   onToggle: (id: string) => void;
   today: string;
@@ -135,7 +139,7 @@ function LawCard({
             )}
           </span>
         </div>
-        <StatusPill status={status} />
+        <StatusPill status={status} label={statusLabel} />
       </div>
       <p className="text-xs leading-relaxed text-muted-foreground">{match.reason}</p>
 
@@ -237,8 +241,6 @@ function LawCard({
   );
 }
 
-const DATE_FMT = new Intl.DateTimeFormat("en-US", { month: "short", day: "numeric", year: "numeric", timeZone: "UTC" });
-
 function DutyRow({
   duty,
   checked,
@@ -264,7 +266,7 @@ function DutyRow({
         />
         <label htmlFor={id} className="flex-1 cursor-pointer">
           <span className={cn(checked && "text-muted-foreground line-through decoration-muted-foreground/40")}>
-            {duty.text}
+            {checkboxLabel(duty.text)}
           </span>
           <span className="mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-0.5 font-mono text-[9.5px] text-muted-foreground">
             <span
@@ -273,7 +275,7 @@ function DutyRow({
                 inForce ? "border-status-noncompliant/50 text-status-noncompliant" : "border-status-soon/50 text-status-soon",
               )}
             >
-              {inForce ? "In force" : `From ${DATE_FMT.format(new Date(duty.effectiveDate + "T00:00:00Z"))}`}
+              {inForce ? "In force" : `From ${formatDay(duty.effectiveDate)}`}
             </span>
             {duty.timing && <span>{duty.timing}</span>}
             {duty.source === "prd" && <span title="Not extracted from the law text yet">From PRD summary</span>}

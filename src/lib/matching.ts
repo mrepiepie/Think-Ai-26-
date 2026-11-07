@@ -1,6 +1,7 @@
 import { ruleCard } from "@/data/law-library";
 import { LAWS_BY_ID } from "@/data/laws";
 import type { ComplianceStatus, Law } from "@/data/types";
+import { statusText } from "./compliance";
 import type { ConfirmedProfile, FeatureId } from "./product-profile";
 import type { RuleField, RuleItem, RuleObligation } from "./rule-card";
 
@@ -399,6 +400,25 @@ export function isNoticeDuty(text: string, quote: string, addressees: Addressee[
   return !b2b;
 }
 
+/** Leading "May not" / "Person must not" / "Do not" ... of a prohibition. */
+const LEADING_BAN = /^(?:(?:a|an|the)\s+)?(?:[a-z]+\s+)?(?:must not|may not|shall not|cannot|do not|does not)\s+/i;
+const ANY_BAN = /\b(must not|may not|shall not|do not|does not|prohibit\w*|bans?|banned)\b/i;
+
+/** A "must not / may not / ban" duty. */
+export function isProhibition(text: string): boolean {
+  return ANY_BAN.test(text);
+}
+
+/**
+ * Checkbox label for a duty. Prohibitions read as something to confirm:
+ * "May not develop AI that..." -> "Confirm you don't: develop AI that...".
+ */
+export function checkboxLabel(text: string): string {
+  if (!isProhibition(text)) return text;
+  const m = text.match(LEADING_BAN);
+  return `Confirm you don't: ${m ? text.slice(m[0].length) : text}`;
+}
+
 /** Jurisdiction keys a profile reaches. NYC is inside New York State. */
 export function profileKeys(profile: ConfirmedProfile): Set<string> {
   const keys = new Set(profile.jurisdictions);
@@ -573,13 +593,33 @@ export function statusFor(laws: LawMatch[], checked: ReadonlySet<string>, todayI
   return "compliant";
 }
 
+/** Earliest effective date among unchecked applicable duties not yet in force. */
+export function earliestOpenDate(laws: LawMatch[], checked: ReadonlySet<string>, todayIso: string): string | null {
+  const dates = laws
+    .filter((l) => l.applies)
+    .flatMap((l) => l.applicable)
+    .filter((d) => !checked.has(d.id) && d.effectiveDate > todayIso)
+    .map((d) => d.effectiveDate)
+    .sort();
+  return dates[0] ?? null;
+}
+
+/** Display label for a set of laws, e.g. "Action needed by Jan 1, 2027". */
+export function statusLabelFor(laws: LawMatch[], checked: ReadonlySet<string>, todayIso: string): string {
+  return statusText(statusFor(laws, checked, todayIso), earliestOpenDate(laws, checked, todayIso));
+}
+
 export interface JurisdictionRollup {
   key: string;
   status: ComplianceStatus;
+  /** Display label for the status (see statusText). */
+  label: string;
   /** All tracked laws for this jurisdiction (applying first). */
   laws: LawMatch[];
   /** Status per law id (same rules as the jurisdiction status). */
   lawStatus: Record<string, ComplianceStatus>;
+  /** Display label per law id. */
+  lawLabel: Record<string, string>;
   needsReview: number;
 }
 
@@ -600,12 +640,24 @@ export function rollupByJurisdiction(
   for (const m of matches) {
     const key = m.rule.jurisdictionKey;
     if (!keys.has(key) || !include(m.law)) continue;
-    (out[key] ??= { key, status: "not-applicable", laws: [], lawStatus: {}, needsReview: 0 }).laws.push(m);
+    (out[key] ??= {
+      key,
+      status: "not-applicable",
+      label: "",
+      laws: [],
+      lawStatus: {},
+      lawLabel: {},
+      needsReview: 0,
+    }).laws.push(m);
   }
   for (const r of Object.values(out)) {
     r.laws.sort((a, b) => Number(b.applies) - Number(a.applies));
     r.status = statusFor(r.laws, checked, todayIso);
-    for (const l of r.laws) r.lawStatus[l.law.id] = statusFor([l], checked, todayIso);
+    r.label = statusLabelFor(r.laws, checked, todayIso);
+    for (const l of r.laws) {
+      r.lawStatus[l.law.id] = statusFor([l], checked, todayIso);
+      r.lawLabel[l.law.id] = statusLabelFor([l], checked, todayIso);
+    }
     r.needsReview = r.laws.filter((l) => l.applies).reduce((n, l) => n + l.needsReview.length, 0);
   }
   return out;
