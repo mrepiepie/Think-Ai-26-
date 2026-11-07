@@ -1,0 +1,390 @@
+PRODUCT REQUIREMENTS DOCUMENT (DRAFT)
+ThinkAI'26 - Team Monster - US assignment
+Working title: State AI Law Compliance Mapper (final name not decided)
+Status: Draft, revised Saturday 7 Nov 2026. Twist is revealed Sunday
+8 Nov and may change scope.
+
+CHANGE LOG
+- 7 Nov 2026 (rev 2): Section 3 facts verified against current sources.
+  Colorado entry corrected (SB 24-205 repealed, replaced by SB 26-189,
+  effective Jan 1, 2027). "More than twice" bill count corrected to
+  "nearly double". California subpoena date corrected. Added: NYC LL144
+  enforcement audit, New York RAISE Act, AB 2013 court challenge,
+  Texas AG complaint portal, multi-state AG response to the Hugging
+  Face incident, updated PJM figures. Section 7 demo and section 8
+  criterion 4 annotated to match. No decisions changed.
+
+======================================================================
+1. ONE-LINE SUMMARY
+======================================================================
+The US has no single federal AI law, so every state writes its own.
+This product shows who the rules apply to, what each one requires,
+and who is breaking them, for three different users.
+
+Analogy: like sales tax. Every state sets its own rules, and a business
+selling everywhere has to follow all of them at once.
+
+======================================================================
+2. STATUS OF DECISIONS
+======================================================================
+DECIDED
+- Tech stack: Next.js (TypeScript) on Vercel, Groq for the LLM.
+- Law data: hybrid. Live scraping for one source, plus 6-8
+  pre-processed laws saved for the demo. Scaling explained on slides.
+- Data flow tracer (F9): owned by the state AG investigator. Built
+  after the other features.
+- Data center watchdog (F10) redefined: map of data centers by state
+  and county, local impact around each, and scraped news headlines and
+  politicians' statements (all sides, neutral). Still a MINOR section.
+- Demo can use screenshots and a recorded video of successful runs.
+- Core product: State AI law compliance mapper for small companies.
+- Persona 1: small company.
+- Persona 2: citizen, using the data center watchdog.
+- Persona 3: state attorney general investigator.
+- Data center watchdog is a MINOR feature.
+- Data usage law violations are in scope.
+- AI collecting data without revealing where it goes (Hugging Face
+  example) is in scope as a concern.
+- Priority: strengthen the small company persona (persona 1) most.
+- Additional features F11-F22 (section 5b) added to the PRD.
+- Build tool: Claude Code.
+
+OPEN (see section 10)
+- Which features are in the demo.
+
+======================================================================
+3. THE PROBLEM AND EVIDENCE (verified 7 Nov 2026)
+======================================================================
+Items marked [UNCHECKED] have not been re-verified; keep them off
+slides until they are.
+
+SCALE OF THE PROBLEM
+- In 2025, state lawmakers in all 50 states introduced 1,208 AI bills;
+  about 145 were enacted (MultiState count; NCSL counts 131 because it
+  defines "AI-related" differently).
+  Source: https://www.multistate.ai/artificial-intelligence-ai-legislation
+- That is nearly double 2024 (635 bills introduced, 99 enacted).
+  Source: same MultiState page
+- By March 2026, 45 states had already introduced 1,561 AI bills, more
+  than all of 2024.
+  Source: https://ai2.work/blog/state-ai-bills-surge-past-1-500-as-congress-remains-deadlocked
+- One AI hiring tool can face several state and city rules at once
+  (e.g. Illinois, New York City, Colorado, Texas).
+
+FEDERAL VS STATE
+- Executive Order 14365 (Dec 11, 2025) told the Justice Department to
+  set up an AI Litigation Task Force to challenge state AI laws; the
+  Attorney General created it Jan 9, 2026. An executive order cannot
+  override state law by itself, so companies must keep complying until
+  a court blocks a law.
+  Sources: https://www.lawandtheworkplace.com/2026/04/what-president-trumps-ai-executive-order-14365-means-for-employers/
+           https://secureprivacy.ai/blog/trump-ai-executive-order-and-state-law-preemption-what-to-do-now
+- The Task Force's first court involvement was in xAI's lawsuit against
+  Colorado (2026), not a standalone DOJ lawsuit.
+  Source: https://gc.ai/blog/state-ai-laws
+
+EXAMPLE STATE LAWS
+- Illinois HB 3773 (in effect Jan 1, 2026): bans AI with a
+  discriminatory effect in hiring, promotion, firing and other
+  employment decisions (including using ZIP codes as a proxy); employers
+  must notify workers and applicants when AI is used. The state's
+  implementing rules were still delayed as of mid-2026.
+  Sources: https://www.duanemorris.com/alerts/illinois_enacts_artificial_intelligence_law_focused_employment_practices_0824.html
+           https://natlawreview.com/article/states-take-aim-ai-employment-decisions-illinoiss-disclosure-and-anti
+- California SB 53 (in force Jan 1, 2026): frontier model developers
+  must publish safety frameworks and report serious safety incidents;
+  heaviest duties for developers with $500M+ revenue. Almost never
+  applies to a small business.
+  [UNCHECKED] penalties up to $1M per violation.
+  Source: https://www.vaquill.ai/blog/california-ai-laws-explained-sb-53-and-the-rest
+- California AB 2013 (in force Jan 1, 2026): generative AI developers
+  must post a summary of their training data. xAI sued; a federal judge
+  refused to block the law (March 2026); Ninth Circuit argument is set
+  for Nov 18, 2026.
+  Source: https://www.recordinglaw.com/us-laws/ai-laws/california-ai-laws/
+- California SB 243 (in force Jan 1, 2026): companion chatbots must tell
+  known minors they are talking to AI, remind them to take a break at
+  least every 3 hours, and follow crisis protocols.
+  Source: https://calawyers.org/privacy-law/regulatory-focus-on-ai-companion-character-chatbots/
+- Texas HB 149 / TRAIGA (in force Jan 1, 2026): bans certain harmful AI
+  uses and requires disclosures. The Texas attorney general has
+  exclusive enforcement, must give a 60-day cure period, and there is
+  no private right to sue. Penalties $10k-$200k per violation plus
+  daily amounts for continuing violations. The AG had to launch a
+  public online complaint portal by Sept 1, 2026.
+  Source: https://casrai.org/guides/texas-traiga-explained
+- Colorado: the original Colorado AI Act (SB 24-205) NEVER took effect.
+  Timeline: delayed from Feb 1 to June 30, 2026 -> xAI sued (Apr 9,
+  2026) -> federal magistrate stayed enforcement (Apr 27) -> repealed
+  and replaced by SB 26-189, signed May 14, 2026. SB 26-189 is a
+  narrower disclosure law for automated decisions in areas like jobs,
+  loans, housing and insurance, effective Jan 1, 2027, enforced by the
+  attorney general only, with a 60-day cure period. AG rulemaking
+  hearing held Oct 26, 2026; final rules due by Jan 1, 2027.
+  Sources: https://securityboulevard.com/2026/11/us-state-ai-laws-in-force-what-an-enterprise-deployer-actually-owes/
+           https://stackcyber.com/posts/ai-colorado-laws
+           https://intellisee.com/intelligence/colorado-ai-act-sb-24-205-repeal-2026-compliance-briefing/
+- New York City Local Law 144 (enforced since July 2023): annual
+  independent bias audit of AI hiring tools, public audit summary, and
+  candidate notice; up to $1,500 per violation per day. The employer is
+  responsible even if it bought the tool from a vendor. A December 2025
+  New York State Comptroller audit found the city's complaint-driven
+  enforcement was weak (only two AEDT complaints received in the audit
+  period).
+  Sources: https://www.osc.ny.gov/state-agencies/audits/2025/12/02/enforcement-local-law-144-automated-employment-decision-tools
+           https://www.dlapiper.com/en/insights/publications/2026/01/critical-audit-of-nyc-ai-hiring-law-signals-increased-risk-for-employers
+- New York RAISE Act (signed Dec 19, 2025, rewritten Mar 27, 2026,
+  effective Jan 1, 2027): frontier developers only; safety incidents
+  must be reported within 72 hours (California SB 53: 15 days).
+  Developer registration begins Nov 2026.
+  Sources: https://www.jdsupra.com/legalnews/new-york-finalizes-raise-act-for-8270433/
+           https://secureprivacy.ai/blog/new-york-ai-law-2026-guide
+
+CURRENT HOOK (Hugging Face incident)
+- July 2026: OpenAI models under evaluation escaped their test
+  environment and broke into Hugging Face's systems. Hugging Face
+  disclosed it July 16; OpenAI confirmed its models were responsible
+  July 21.
+- An OpenAI agent also breached Australia's Medicare Statistics
+  Reporting Service portal (most reports: June 18, 2026; some say July
+  18). OpenAI told Australia on Sept 10; the Prime Minister made it
+  public Sept 24. No patient records were reportedly accessed.
+  Sources: https://www.cnbc.com/2026/09/24/openai-agent-hacked-australian-government-website-.html
+           https://www.abc.net.au/news/2026-09-24/ai-agent-accessed-australian-government-site-pm-says/107189078
+- Sept 25, 2026: OpenAI disclosed 53 instances of user-provided images
+  posted by its agents to image-hosting sites via unlisted links. It
+  says it cannot match the images to their owners, so it cannot notify
+  them.
+  Sources: https://bleepingcomputer.com/news/artificial-intelligence/openais-ai-agents-accidentally-uploaded-user-provided-images-to-third-party-sites
+           https://www.igeeksblog.com/openai-user-images-posted-online/
+- State attorney general response (many states, separately):
+  Aug 3: Iowa-led 15-state coalition demands OpenAI preserve records.
+  Aug 24: Alabama AG subpoena.
+  Sept 1: Montana AG formal probe.
+  Sept: California opens a formal investigation.
+  Sept 30: California subpoena served (announced Oct 1). A subpoena
+  does not mean a violation has been found.
+  Sources: https://www.orcarouter.ai/blog/2026-10-01-california-ag-subpoena-openai-agents
+           https://www.theregister.com/a/5300850
+           https://aiweekly.co/alerts/california-ag-bonta-probes-openai-over-hugging-face-agent-hack
+
+======================================================================
+4. PERSONAS
+======================================================================
+PERSONA 1 - SMALL COMPANY (DECIDED)
+Who: startups and small firms using AI in hiring, lending, healthcare,
+chatbots or content generation, selling across state lines, with no
+law firm on retainer.
+Need: "Which AI rules apply to me, in which states, and what must I do?"
+
+PERSONA 2 - CITIZEN (DECIDED)
+Who: an ordinary resident near existing or proposed data centers.
+Need: "Is a data center near me raising my bills, and what can I do?"
+Uses: the data center watchdog.
+
+PERSONA 3 - STATE ATTORNEY GENERAL INVESTIGATOR (DECIDED)
+Who: an investigator in a state attorney general's office.
+Why this persona: most state AI laws are enforced by state attorneys
+general, not police (e.g. Texas AG for TRAIGA, Colorado AG for SB
+26-189; several AGs separately investigated OpenAI after the Hugging
+Face incident).
+Situation: a small team covering a whole state, relying on complaints
+and tips because it can't watch every company.
+Need: "Which companies may be breaking state AI or data laws, and what
+evidence do we have?"
+Uses: violation pattern detector (F19), evidence pack builder (F20),
+cross-state comparison (F21), data flow traces (F9).
+
+How the three personas connect:
+- Citizen files a complaint (F17).
+- Investigator sees patterns across complaints (F19) and builds a case
+  (F20).
+- Small company gets alerts (F5) and fixes problems before an
+  investigator calls.
+Analogy: drivers, a traffic GPS and traffic police, all reading the
+same rulebook.
+
+======================================================================
+5. FEATURES
+======================================================================
+F1. LAW TRACKER (core)
+Pulls new AI bills and signed laws from state legislature sites and
+tracks status: introduced, signed, delayed, challenged in court,
+repealed/replaced.
+
+F2. OBLIGATION EXTRACTOR (core)
+An LLM reads each law and turns it into structured rules: who it covers,
+what triggers it, what you must do, by when, and the penalty. A
+lawyer-reviewed sample checks extraction accuracy.
+
+F3. PRODUCT PROFILER (core, persona 1)
+Company describes its AI features in plain language or connects product
+docs. Tool classifies each feature, e.g. "resume screening",
+"chatbot for under-18s", "generates images".
+
+F4. APPLICABILITY ENGINE (core, persona 1)
+Matches each feature against each state where the company has users and
+produces a per-state checklist.
+
+F5. CHANGE ALERTS (core, persona 1)
+When a law is signed, delayed, challenged or replaced, tells the
+company exactly which features are affected.
+
+F6. DOCUMENT DRAFTER (core, persona 1)
+Drafts required notices, disclosures and impact assessment templates
+per state.
+
+F7. INCIDENT RESPONSE MODE (proposed)
+When an AI system causes harm:
+- for the company whose AI caused it: which state laws require
+  reporting the incident and by when;
+- for the victim: which state data breach rules apply, who must be
+  notified, and a draft notice.
+
+F8. DATA USAGE LAW COVERAGE (decided in scope)
+Extend F1-F6 beyond AI laws to state privacy laws and state data breach
+notification laws (every state has one, each with different rules).
+
+F9. DATA FLOW TRACER (proposed, owner persona not decided)
+Watches where an AI tool or agent actually sends data and compares it
+against what the company's privacy policy promises.
+Analogy: checking your receipt against what actually left your account.
+Motivated by the Hugging Face incident and the 53 uploaded images.
+
+F10. DATA CENTER WATCHDOG (decided, MINOR, persona 2)
+Citizen view: map of existing and proposed data centers, how much of
+a household bill comes from data center demand, alerts for local
+hearings.
+Evidence (PJM grid, 13 states plus DC):
+- Data centers are over 90% of PJM's forecast new power demand (PJM
+  long-term forecast: about 94%).
+- Capacity auction price rose from $28.92 to $329.17/MW-day in two
+  years (about +1,000%); the 2027/28 auction cleared at $333.44.
+- The independent market monitor attributed 63% of the 2025/26 price
+  jump to data centers.
+- ICF projects home rates could rise 30-60% by 2030.
+Sources: https://tr.tradingview.com/news/reuters.com,2025:newsml_L1N3TP0R8:0-power-costs-soar-in-pjm-region-as-data-center-demand-spikes/
+         https://ieefa.org/resources/projected-data-center-growth-spurs-pjm-capacity-prices-factor-10
+         https://introl.com/ar/blog/pjm-rate-shock-100-billion-data-center-electricity-2026
+
+======================================================================
+5b. ADDITIONAL FEATURES
+======================================================================
+FOR THE SMALL COMPANY (persona 1 - PRIORITY)
+F11. AI VENDOR CHECKER
+Before buying an AI tool, the company enters the vendor's name and sees
+which laws that tool could trigger in its states.
+Analogy: checking a used car's history before buying it.
+
+F12. PLAIN ENGLISH EXPLAINER
+Any law explained in about five beginner-level sentences, with a link
+to the original text.
+
+F13. COMPLIANCE SCORE PER STATE
+Traffic-light view: green (compliant), yellow (action needed soon),
+red (non-compliant now).
+
+F14. DEADLINE CALENDAR
+All upcoming effective dates and filing deadlines in one calendar,
+with reminders.
+
+F15. "WHAT IF WE EXPAND?" SIMULATOR
+"We're launching in Colorado next month. What changes?" Shows new
+obligations before launch.
+
+FOR THE CITIZEN (persona 2)
+F16. "WAS AI USED ON ME?" CHECKER
+Someone rejected for a job or loan sees which state laws gave them a
+right to be told AI was used, plus a draft letter asking the company.
+
+F17. COMPLAINT FILER
+Turns a citizen's story into a properly formatted complaint to the
+right state attorney general's office (e.g. the Texas AG's online
+complaint portal required by TRAIGA).
+
+F18. DATA CENTER HEARING ALERTS
+Notification when a data center proposal nearby goes to a public
+hearing, with a summary of what's being decided.
+
+FOR THE STATE ATTORNEY GENERAL INVESTIGATOR (persona 3)
+F19. VIOLATION PATTERN DETECTOR
+Spots when many complaints point at the same company or AI tool.
+
+F20. EVIDENCE PACK BUILDER
+Bundles complaints, data flow traces (F9) and relevant law text into
+one case file.
+
+F21. CROSS-STATE COMPARISON
+Shows how the same company is treated in different states.
+
+TIED TO THE HUGGING FACE HOOK
+F22. AI INCIDENT TIMELINE REPLAYER
+Feed in an incident's events; shows hour by hour who had to report
+what, to whom, and by when. Candidate for a live demo moment.
+
+Note: demo scope still open. Judges usually reward a few features done
+well over many half-built ones.
+
+======================================================================
+6. AI COMPONENTS (why it is not an ordinary AI app)
+======================================================================
+- Legal text extraction into structured rules (F2).
+- Classification of company AI features (F3).
+- Rules engine matching features x states x laws (F4).
+- Document generation (F6, F7).
+- Network/data-flow analysis vs. policy text (F9).
+
+======================================================================
+7. HACKATHON DEMO (draft)
+======================================================================
+1. Fictional startup: AI resume screener with users in New York City,
+   Illinois, Colorado and Texas.
+   Note: Colorado's applicable law is SB 26-189 (effective Jan 1,
+   2027), not SB 24-205. NYC, Illinois and Texas rules are already in
+   force.
+2. Map lights up with applicable states; per-state checklist shown.
+3. Draft notice to job applicants generated.
+4. Simulate a new law being signed; alert fires.
+5. Optional: replay a simplified Hugging Face timeline and show each
+   party's reporting checklist step by step (F7).
+6. Optional: citizen view of the data center watchdog (F10).
+
+======================================================================
+8. FIT AGAINST THE FIVE CRITERIA
+======================================================================
+1. Not an ordinary AI app: STRONG.
+2. US-specific: VERY STRONG (exists because there is no federal law).
+3. Audience hasn't considered it: MEDIUM (lawyers know; founders and
+   public mostly don't).
+4. Long-standing: WEAK (mainly 2024 onward, but growing fast).
+   New evidence for the team to weigh: NYC Local Law 144 has been
+   enforced since 2023, and a December 2025 State Comptroller audit
+   found the city agency struggled to enforce it. Rating not changed.
+5. Not already solved: MEDIUM (law firm trackers exist, mostly for big
+   clients).
+
+======================================================================
+9. RISKS
+======================================================================
+- Laws change constantly (Colorado's AI law was replaced before it
+  ever took effect); the tool must never claim to give legal advice.
+- LLM extraction errors could say a company is compliant when it isn't;
+  every output must link to the law's actual text.
+- SB 53 and New York's RAISE Act only cover the largest model
+  developers, so for most startups the incident angle applies to them
+  as victims, not developers.
+- Scope creep: F7-F10 could make the demo too broad for a hackathon.
+
+======================================================================
+10. OPEN QUESTIONS FOR THE TEAM
+======================================================================
+1. Data flow tracer (F9): used by the small company (checking its own
+   AI vendors), the citizen (checking apps), the investigator, or
+   several?
+2. Data center watchdog (F10): single map screen in the demo, or a
+   fuller section?
+3. Which of F7-F22 are in the demo, and which are "future roadmap"?
+4. Final product name.
+5. Does Sunday's twist change any of this?
+6. Tech stack (frontend, backend, LLM provider).
+7. Criterion 4: does the NYC LL144 enforcement audit change the rating?
