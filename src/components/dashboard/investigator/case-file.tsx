@@ -3,6 +3,7 @@
 import { ArrowUpRight, Check, FileDown, Sparkles } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
+import { readTheLawLink } from "@/data/law-library";
 import { LAWS_BY_ID } from "@/data/laws";
 import type { Complaint, InvestigatedCompany } from "@/data/types";
 import { cn } from "@/lib/utils";
@@ -117,7 +118,7 @@ export function CaseFile({
                     <span className="text-muted-foreground"> · {law.effective}</span>
                   </span>
                   <a
-                    href={law.sources[0].url}
+                    href={readTheLawLink(law).url}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="inline-flex shrink-0 items-center gap-0.5 text-primary hover:underline"

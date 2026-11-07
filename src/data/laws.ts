@@ -5,8 +5,10 @@ import type { Law } from "./types";
  * Do not add laws, dates or penalties that are not in that section.
  * Penalties the PRD marks [UNCHECKED] are left out (penalty: null).
  *
- * Note: the "sources" are the citations given in the PRD. Replace them
- * with links to the official statute text once those are collected.
+ * Note: the "sources" are the citations given in the PRD. "Read the law"
+ * links use the official text from data/laws/sources.json instead (see
+ * law-library.ts), and verified rule cards from the law reader
+ * (npm run extract-laws) override obligations, penalty and enforcer.
  */
 export const LAWS: Law[] = [
   {

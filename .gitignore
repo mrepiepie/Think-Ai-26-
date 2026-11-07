@@ -41,3 +41,6 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# law reader chunk cache (scripts/extract-laws.ts)
+/.cache/

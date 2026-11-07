@@ -1,10 +1,13 @@
 "use client";
 
-import { ArrowUpRight, CheckCircle2, Circle, MapPinned } from "lucide-react";
+import { ArrowUpRight, CheckCircle2, Circle, MapPinned, Quote, ScrollText } from "lucide-react";
+import { useId, useState } from "react";
 import { buttonVariants } from "@/components/ui/button";
+import { readTheLawLink, verifiedRules } from "@/data/law-library";
 import { stateName } from "@/data/states";
 import type { Law, LawAssessment } from "@/data/types";
 import type { StateRollup } from "@/lib/compliance";
+import type { RuleItem, RuleObligation } from "@/lib/rule-card";
 import { cn } from "@/lib/utils";
 import { Eyebrow, Panel } from "../panel";
 import { LawTags, StatusPill } from "./status";
@@ -51,6 +54,9 @@ export function StateChecklist({
 
 function LawCard({ law, assessment }: { law: Law; assessment: LawAssessment }) {
   const na = assessment.status === "not-applicable";
+  const rules = verifiedRules(law.id);
+  const lawLink = readTheLawLink(law);
+  const fromLaw = rules && rules.obligations.length > 0;
   return (
     <li className="space-y-2.5 px-3 py-3">
       <div className="flex items-start justify-between gap-2">
@@ -62,9 +68,31 @@ function LawCard({ law, assessment }: { law: Law; assessment: LawAssessment }) {
       </div>
       <p className="text-xs leading-relaxed text-muted-foreground">{assessment.reason}</p>
 
+      {!na && fromLaw && (
+        <div className="space-y-1">
+          <div className="flex items-baseline justify-between gap-2">
+            <Eyebrow>What the law requires</Eyebrow>
+            <span
+              className="font-mono text-[9px] tracking-wider text-muted-foreground uppercase"
+              title="Extracted by AI from the official law text. Each item shown has a quote that was matched word-for-word against that text. Not legal advice."
+            >
+              From official text
+            </span>
+          </div>
+          <ObligationList obligations={rules.obligations} />
+          {rules.unverifiedObligations > 0 && (
+            <p className="text-[10.5px] text-muted-foreground italic">
+              {rules.unverifiedObligations} more extracted obligation
+              {rules.unverifiedObligations === 1 ? "" : "s"}: Not verified (quote not found in the law text), so
+              not shown.
+            </p>
+          )}
+        </div>
+      )}
+
       {!na && assessment.checklist.length > 0 && (
         <div className="space-y-1">
-          <Eyebrow>Obligations</Eyebrow>
+          <Eyebrow>{fromLaw ? "Your progress (sample)" : "Obligations"}</Eyebrow>
           <ul className="space-y-1">
             {assessment.checklist.map((item) => (
               <li key={item.task} className="flex items-start gap-2 text-xs">
@@ -91,16 +119,13 @@ function LawCard({ law, assessment }: { law: Law; assessment: LawAssessment }) {
         <dt className="text-muted-foreground">Deadline</dt>
         <dd>{law.effective}</dd>
         <dt className="text-muted-foreground">Penalty</dt>
-        <dd className={cn(!law.penalty && "text-muted-foreground italic")}>
-          {law.penalty ?? "Not in verified sources yet"}
-        </dd>
-        {law.enforcement.enforcer && (
+        <FactCell items={rules?.penalties} fallback={law.penalty} />
+        <dt className="text-muted-foreground">Enforced by</dt>
+        <FactCell items={rules?.enforcedBy} fallback={law.enforcement.enforcer} />
+        {(rules?.curePeriod.length || law.enforcement.curePeriod) && (
           <>
-            <dt className="text-muted-foreground">Enforced by</dt>
-            <dd>
-              {law.enforcement.enforcer}
-              {law.enforcement.curePeriod && ` · ${law.enforcement.curePeriod} cure period`}
-            </dd>
+            <dt className="text-muted-foreground">Cure period</dt>
+            <FactCell items={rules?.curePeriod} fallback={law.enforcement.curePeriod} />
           </>
         )}
       </dl>
@@ -114,16 +139,110 @@ function LawCard({ law, assessment }: { law: Law; assessment: LawAssessment }) {
       )}
 
       <a
-        href={law.sources[0].url}
+        href={lawLink.url}
         target="_blank"
         rel="noopener noreferrer"
-        title={`Opens the source cited for this law: ${law.sources[0].label}`}
+        title={
+          lawLink.official
+            ? `Opens the official law text: ${lawLink.label}`
+            : `Opens the source cited for this law: ${lawLink.label}`
+        }
         className={cn(buttonVariants({ variant: "outline", size: "xs" }), "font-mono text-[10px] tracking-wider uppercase")}
       >
         Read the law
         <ArrowUpRight data-icon="inline-end" />
       </a>
     </li>
+  );
+}
+
+const OBLIGATIONS_SHOWN = 6;
+
+/** Verified obligations from the rule card; long lists collapse. */
+function ObligationList({ obligations }: { obligations: RuleObligation[] }) {
+  const [showAll, setShowAll] = useState(false);
+  const visible = showAll ? obligations : obligations.slice(0, OBLIGATIONS_SHOWN);
+  const hidden = obligations.length - OBLIGATIONS_SHOWN;
+  return (
+    <>
+      <ul className="space-y-1.5">
+        {visible.map((o) => (
+          <li key={o.quote} className="text-xs">
+            <div className="flex items-start gap-2">
+              <ScrollText className="mt-px size-3.5 shrink-0 text-primary/70" aria-hidden />
+              <span className="flex-1">
+                {o.who && <span className="text-muted-foreground">{o.who}: </span>}
+                {o.text}
+              </span>
+              {o.timing && (
+                <span className="max-w-[40%] shrink-0 text-right font-mono text-[9.5px] text-muted-foreground">
+                  {o.timing}
+                </span>
+              )}
+            </div>
+            <QuoteToggle quote={o.quote} className="pl-5.5" />
+          </li>
+        ))}
+      </ul>
+      {hidden > 0 && (
+        <button
+          type="button"
+          onClick={() => setShowAll((v) => !v)}
+          aria-expanded={showAll}
+          className="font-mono text-[9.5px] tracking-wider text-primary uppercase hover:underline focus-visible:underline focus-visible:outline-none"
+        >
+          {showAll ? "Show fewer" : `Show all ${obligations.length}`}
+        </button>
+      )}
+    </>
+  );
+}
+
+/**
+ * A fact row value: verified rule-card items (each with a quote toggle)
+ * when there are any, else the PRD-verified fallback, else "Not verified".
+ */
+function FactCell({ items, fallback }: { items: RuleItem[] | undefined; fallback: string | null }) {
+  if (items && items.length > 0) {
+    return (
+      <dd className="space-y-1">
+        {items.map((item) => (
+          <div key={item.quote}>
+            {item.text}
+            <QuoteToggle quote={item.quote} />
+          </div>
+        ))}
+      </dd>
+    );
+  }
+  return <dd className={cn(!fallback && "text-muted-foreground italic")}>{fallback ?? "Not verified"}</dd>;
+}
+
+/** Small toggle that reveals the exact supporting sentence(s) from the law. */
+function QuoteToggle({ quote, className }: { quote: string; className?: string }) {
+  const [open, setOpen] = useState(false);
+  const id = useId();
+  return (
+    <div className={className}>
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        aria-expanded={open}
+        aria-controls={id}
+        className="inline-flex items-center gap-1 font-mono text-[9.5px] tracking-wider text-primary uppercase hover:underline focus-visible:underline focus-visible:outline-none"
+      >
+        <Quote className="size-2.5" aria-hidden />
+        {open ? "Hide quote" : "Quote"}
+      </button>
+      {open && (
+        <blockquote
+          id={id}
+          className="mt-1 border-l-2 border-primary/50 bg-muted/40 py-1 pr-1.5 pl-2 text-[11px] leading-relaxed text-muted-foreground"
+        >
+          “{quote}”
+        </blockquote>
+      )}
+    </div>
   );
 }
 

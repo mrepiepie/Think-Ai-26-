@@ -1,0 +1,71 @@
+[
+  {
+    "id": "nyc-ll144",
+    "title": "New York City Local Law 144 of 2021 (Int. No. 1894-A), adding Admin. Code §§ 20-870 to 20-874 (automated employment decision tools)",
+    "url": "https://legistar.council.nyc.gov/View.ashx?M=F&ID=10369162&GUID=F25C6911-8267-48AF-9048-180D44091624",
+    "publisher": "New York City Council (Legistar), document \"Int. No. 1894-A (FINAL)\"",
+    "detailPage": "https://legistar.council.nyc.gov/LegislationDetail.aspx?ID=4344524&GUID=B051915D-A9AC-451E-81F8-6596032FA3F9",
+    "fetched": "2026-11-07",
+    "file": "data/laws/nyc-ll144.txt",
+    "notes": "Enacted text of the local law, which creates Admin. Code §§ 20-870 to 20-874. The NYC Admin Code site (codelibrary.amlegal.com) blocked automated download, so later code amendments, if any, are not included."
+  },
+  {
+    "id": "il-hb3773",
+    "title": "Illinois HB 3773, Public Act 103-0804 (amends the Illinois Human Rights Act)",
+    "url": "https://ilga.gov/Legislation/publicacts/view/103-0804",
+    "publisher": "Illinois General Assembly",
+    "fetched": null,
+    "file": null,
+    "notes": "NOT FETCHED. ilga.gov refused connections from the build machine (connection timed out on every attempt). Text not saved; no rule card extracted. Save the official text to data/laws/il-hb3773.txt and re-run npm run extract-laws."
+  },
+  {
+    "id": "tx-traiga",
+    "title": "Texas H.B. No. 149 (89th Legislature, Regular Session), Enrolled version - Texas Responsible Artificial Intelligence Governance Act",
+    "url": "https://capitol.texas.gov/tlodocs/89R/billtext/html/HB00149F.htm",
+    "publisher": "Texas Legislature Online",
+    "fetched": "2026-11-07",
+    "file": "data/laws/tx-traiga.txt"
+  },
+  {
+    "id": "co-sb26-189",
+    "title": "Colorado Senate Bill 26-189, Session Laws of Colorado 2026, Chapter 131 (automated decision-making technology in consequential decisions)",
+    "url": "https://leg.colorado.gov/laws/session-laws/SB26-189/131/download",
+    "publisher": "Colorado General Assembly",
+    "detailPage": "https://leg.colorado.gov/bills/sb26-189",
+    "fetched": "2026-11-07",
+    "file": "data/laws/co-sb26-189.txt"
+  },
+  {
+    "id": "ca-sb243",
+    "title": "California Senate Bill 243 (2025-2026), Chapter 677, Statutes of 2025 (companion chatbots)",
+    "url": "https://leginfo.legislature.ca.gov/faces/billTextClient.xhtml?bill_id=202520260SB243",
+    "publisher": "California Legislative Information",
+    "fetched": "2026-11-07",
+    "file": "data/laws/ca-sb243.txt"
+  },
+  {
+    "id": "ca-ab2013",
+    "title": "California Assembly Bill 2013 (2023-2024), Chapter 817, Statutes of 2024 (generative AI training data transparency)",
+    "url": "https://leginfo.legislature.ca.gov/faces/billTextClient.xhtml?bill_id=202320240AB2013",
+    "publisher": "California Legislative Information",
+    "fetched": "2026-11-07",
+    "file": "data/laws/ca-ab2013.txt"
+  },
+  {
+    "id": "ca-sb53",
+    "title": "California Senate Bill 53 (2025-2026), Chapter 138, Statutes of 2025 (Transparency in Frontier Artificial Intelligence Act)",
+    "url": "https://leginfo.legislature.ca.gov/faces/billTextClient.xhtml?bill_id=202520260SB53",
+    "publisher": "California Legislative Information",
+    "fetched": "2026-11-07",
+    "file": "data/laws/ca-sb53.txt"
+  },
+  {
+    "id": "ny-raise",
+    "title": "New York RAISE Act as amended: Senate Bill S8828 (2025-2026), Chapter 96 of the Laws of 2026, signed March 27, 2026 (repeals and re-adds General Business Law Article 44-B)",
+    "url": "https://nyassembly.gov/leg/?default_fld=&leg_video=&bn=S08828&term=2025&Summary=Y&Actions=Y&Text=Y",
+    "publisher": "New York State Assembly",
+    "fetched": "2026-11-07",
+    "file": "data/laws/ny-raise.txt",
+    "notes": "Chapter 96 replaces the whole of Article 44-B as enacted by Chapter 699 of 2025 (S6953-B), so this is the final text. nysenate.gov blocked automated download; the Assembly site publishes the same bill text."
+  }
+]

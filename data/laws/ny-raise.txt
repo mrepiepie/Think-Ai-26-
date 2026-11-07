@@ -1,0 +1,296 @@
+New York Senate Bill S8828 (2025-2026), Chapter 96 of the Laws of 2026 - RAISE Act chapter amendment (repeals and re-adds General Business Law Article 44-B)
+Official source: https://nyassembly.gov/leg/?default_fld=&leg_video=&bn=S08828&term=2025&Summary=Y&Actions=Y&Text=Y
+Note: as in the official bill text, matter in [brackets] is old law to be omitted. Line numbers and page headers removed.
+======================================================================
+
+STATE OF NEW YORK ________________________________________________________________________
+
+8828
+
+IN SENATE
+
+January 8, 2026 ___________
+
+Introduced by Sen. GOUNARDES -- read twice and ordered printed, and when printed to be committed to the Committee on Rules
+
+AN ACT to amend the general business law, in relation to transparency and safety requirements for developers of artificial intelligence frontier models; to amend a chapter of the laws of 2025 amending the general business law relating to the training and use of artificial intelligence frontier models, as proposed in legislative bills numbers S. 6953-B and A. 6453-B, in relation to the effectiveness thereof; and to repeal certain provisions of the general business law, relating thereto
+
+The People of the State of New York, represented in Senate and Assembly, do enact as follows:
+
+Section 1. Legislative findings and intent. The legislature finds and declares all of the following:
+
+1. New York is leading the world in artificial intelligence innovation and research through companies large and small and through the state's remarkable public and private universities.
+
+2. Artificial intelligence, including new advances in foundation models, has the potential to catalyze innovation and the rapid development of a wide range of benefits for New Yorkers and the New York economy, including advances in medicine, wildfire forecasting and prevention, and climate modeling, and to push the bounds of human creativity and capacity.
+
+3. In building a robust and transparent evidence environment, policymakers can simultaneously protect consumers, leverage industry expertise, and recognize leading safety practices.
+
+4. As industry actors conduct internal research on their technologies' impacts, public trust in these technologies would significantly benefit from access to information regarding, and increased awareness of, frontier AI capabilities.
+
+5. Greater transparency can also advance accountability, competition, and public trust.
+
+6. Incident reporting systems facilitate understanding and monitoring of the post-deployment impacts of artificial intelligence.
+
+7. Unless they are developed with careful diligence and reasonable precaution, there is concern that advanced artificial intelligence systems could have capabilities that pose catastrophic risks.
+
+8. While the major artificial intelligence developers have already voluntarily established the creation, use, and publication of frontier AI frameworks as an industry best practice, not all developers are providing information that is consistent and sufficient to ensure necessary transparency and protection of the public. Mandatory, standardized, and objective disclosures by frontier developers are necessary to provide the government and the public with timely and accurate information.
+
+9. Timely reporting of critical safety incidents to the government is essential to ensure that public authorities are promptly informed of ongoing and emerging risks to public safety. This reporting enables the government to monitor effectively in the event that advanced capabilities emerge in frontier artificial intelligence models that may pose a threat to the public.
+
+10. It is the intent of the legislature to create more transparency, and collective safety will depend in part on frontier developers taking due care in their development and deployment of frontier models proportional to the scale of the foreseeable risks.
+
+§ 2. Article 44-B of the general business law, as added by a chapter of the laws of 2025 amending the general business law relating to the training and use of artificial intelligence frontier models, as proposed in legislative bills numbers S. 6953-B and A. 6453-B, is REPEALED and a new article 44-B is added to read as follows:
+
+ARTICLE 44-B RESPONSIBLE AI SAFETY AND EDUCATION (RAISE) ACT
+
+Section 1420. Definitions. 1421. Transparency requirements. 1422. Reporting. 1423. Loss of equity. 1424 Duties and obligations. 1425. Scope. 1426. Exceptions. 1427. Violations. 1428. Large frontier developer disclosure. 1429. Rulemaking authority.
+
+§ 1420. Definitions. As used in this article, the following terms shall have the following meanings:
+
+1. "Affiliate" means a person controlling, controlled by, or under common control with a specified person, directly or indirectly, through one or more intermediaries.
+
+2. "Artificial intelligence model" means an engineered or machinebased system that varies in its level of autonomy and that can, for explicit or implicit objectives, infer from the input it receives how to generate outputs that can influence physical or virtual environments.
+
+3. (a) "Catastrophic risk" means a foreseeable and material risk that a frontier developer's development, storage, use, or deployment of a frontier model will materially contribute to the death of, or serious injury to, more than fifty people or more than one billion dollars in damage to, or loss of, property arising from a single incident involving a frontier model doing any of the following:
+
+(i) providing expert-level assistance in the creation or release of a chemical, biological, radiological, or nuclear weapon;
+
+(ii) engaging in conduct with no meaningful human oversight, intervention, or supervision that is either a cyberattack or, if the conduct had been committed by a human, would constitute the crime of murder, assault, extortion, or theft, including theft by false pretense; or
+
+(iii) evading the control of its frontier developer or user.
+
+(b) "Catastrophic risk" does not include a foreseeable and material risk from any of the following:
+
+(i) information that a frontier model outputs if the information is otherwise publicly accessible in a substantially similar form from a source other than a foundation model;
+
+(ii) lawful activity of the federal government; or
+
+(iii) harm caused by a frontier model in combination with other software if the frontier model did not materially contribute to the harm.
+
+4. "Critical safety incident" means any of the following:
+
+(a) unauthorized access to, modification of, or exfiltration of, the model weights of a frontier model that results in death or bodily injury;
+
+(b) harm resulting from the materialization of a catastrophic risk;
+
+(c) loss of control of a frontier model causing death or bodily injury; or
+
+(d) a frontier model that uses deceptive techniques against the frontier developer to subvert the controls or monitoring of its frontier developer outside of the context of an evaluation designed to elicit this behavior and in a manner that demonstrates materially increased catastrophic risk.
+
+5. (a) "Deploy" means to make a frontier model available to a third party for use, modification, copying, or combination with other software.
+
+(b) "Deploy" does not include making a frontier model available to a third party for the primary purpose of developing or evaluating the frontier model.
+
+6. "Foundation model" means an artificial intelligence model that is all of the following:
+
+(a) trained on a broad data set;
+
+(b) designed for generality of output; and
+
+(c) adaptable to a wide range of distinctive tasks.
+
+7. "Frontier AI framework" means documented technical and organizational protocols to manage, assess, and mitigate catastrophic risks.
+
+8. "Frontier developer" means a person who has trained, or initiated the training of, a frontier model, with respect to which the person has used, or intends to use, at least as much computing power to train the frontier model as would meet the technical specifications found in subdivision nine of this section.
+
+9. (a) "Frontier model" means a foundation model that was trained using a quantity of computing power greater than 10§26 integer or floating-point operations.
+
+(b) The quantity of computing power described in paragraph (a) of this subdivision shall include computing for the original training run and for any subsequent fine-tuning, reinforcement learning, or other material modifications the developer applies to a preceding foundation model.
+
+10. "Large frontier developer" means a frontier developer that together with its affiliates collectively had annual gross revenues in excess of five hundred million dollars in the preceding calendar year.
+
+11. "Model weight" means a numerical parameter in a frontier model that is adjusted through training and that helps determine how inputs are transformed into outputs.
+
+12. "Department" means the department of financial services.
+
+13. "Property" means tangible or intangible property.
+
+14. "Person" means an individual, proprietorship, firm, partnership, joint venture, syndicate, business trust, company, corporation, limited liability company, association, committee, or any other nongovernmental organization or group of persons acting in concert.
+
+15. "Superintendent" means the superintendent of financial services.
+
+16. "Office" means an office within the department of financial services, which shall report to the superintendent of financial services and is tasked with implementation of this article.
+
+§ 1421. Transparency requirements. 1. A large frontier developer shall write, implement, comply with, and clearly and conspicuously publish on its internet website a frontier AI framework that applies to the large frontier developer's frontier models and describes in detail how the large frontier developer handles all of the following:
+
+(a) incorporating national standards, international standards, and industry consensus best practices into its frontier AI framework;
+
+(b) defining and assessing thresholds used by the large frontier developer to identify and assess whether a frontier model has capabilities that could pose a catastrophic risk, which may include multiple-tiered thresholds;
+
+(c) applying mitigations to address the potential for catastrophic risks based on the results of assessments undertaken pursuant to paragraph (b) of this subdivision;
+
+(d) reviewing assessments and adequacy of mitigations as part of the decision to deploy a frontier model or use it extensively internally;
+
+(e) using third parties to assess the potential for catastrophic risks and the effectiveness of mitigations of catastrophic risks;
+
+(f) revisiting and updating the frontier AI framework, including any criteria that trigger updates and how the large frontier developer determines when its frontier models are substantially modified enough to require disclosures pursuant to subdivision three of this section;
+
+(g) cybersecurity practices to secure unreleased model weights from unauthorized modification or transfer by internal or external parties;
+
+(h) identifying and responding to critical safety incidents;
+
+(i) instituting internal governance practices to ensure implementation of these processes; and
+
+(j) assessing and managing catastrophic risk resulting from the internal use of its frontier models, including risks resulting from a frontier model circumventing oversight mechanisms.
+
+2. (a) A large frontier developer shall review and, as appropriate, update its frontier AI framework at least once per year.
+
+(b) If a large frontier developer makes a material modification to its frontier AI framework, the large frontier developer shall clearly and conspicuously publish the modified frontier AI framework and a justification for that modification within thirty days.
+
+3. (a) Before, or concurrently with, deploying a new frontier model or a substantially modified version of an existing frontier model, a frontier developer shall clearly and conspicuously publish on its internet website a transparency report containing all of the following:
+
+(i) the internet website of the frontier developer;
+
+(ii) a mechanism that enables a natural person to communicate with the frontier developer;
+
+(iii) the release date of the frontier model;
+
+(iv) the languages supported by the frontier model;
+
+(v) the modalities of output supported by the frontier model;
+
+(vi) the intended uses of the frontier model; and
+
+(vii) any generally applicable restrictions or conditions on uses of the frontier model.
+
+(b) Before, or concurrently with, deploying a new frontier model or a substantially modified version of an existing frontier model, a large frontier developer shall include in the transparency report required by paragraph (a) of this subdivision, summaries of all of the following:
+
+(i) assessments of catastrophic risks from the frontier model conducted pursuant to the large frontier developer's frontier AI framework;
+
+(ii) the results of the assessments under subparagraph (i) of this paragraph;
+
+(iii) the extent to which third-party evaluators were involved; and
+
+(iv) other steps taken to fulfill the requirements of the frontier AI framework with respect to the frontier model.
+
+(c) A frontier developer that publishes the information described in paragraph (a) or (b) of this subdivision as part of a larger document, including a system card or model card, shall be deemed in compliance with the applicable paragraph.
+
+4. (a) (i) A frontier developer shall not make a materially false or misleading statement about catastrophic risk from its frontier models or its management of catastrophic risk.
+
+(ii) A large frontier developer shall not make a materially false or misleading statement about its implementation of, or compliance with, its frontier AI framework.
+
+(b) This subdivision shall not apply to a statement that was made in good faith and was reasonable under the circumstances.
+
+5. (a) When a frontier developer publishes documents to comply with this section, such frontier developer may make redactions to such documents that are necessary to protect such frontier developer's trade secrets, such frontier developer's cybersecurity, public safety, or the national security of the United States or to comply with any federal or state law.
+
+(b) If a frontier developer redacts information in a document pursuant to this subdivision, such frontier developer shall describe the character and justification of such redaction in any published version of such document to the extent permitted by the concerns that justify redaction and shall retain the unredacted information for five years.
+
+§ 1422. Reporting. 1. The office shall establish a mechanism to be used by a frontier developer or a member of the public to report a critical safety incident that includes all of the following:
+
+(a) the date of the critical safety incident;
+
+(b) the reasons the incident qualifies as a critical safety incident;
+
+(c) a short and plain statement describing the critical safety incident; and
+
+(d) whether the incident was associated with internal use of a frontier model.
+
+2. (a) A large frontier developer shall transmit to the office a summary of any assessment of catastrophic risk resulting from internal use of its frontier models every three months or pursuant to another reasonable schedule requested by the large frontier developer, communicated in writing to the office with written updates, as appropriate, and agreed upon by the office. The office shall establish a mechanism to be
+
+used by a large frontier developer to confidentially submit summaries of any assessments of the potential for catastrophic risk resulting from internal use of its frontier models.
+
+(b) The office shall take all reasonable precautions to limit access to any reports related to internal use of frontier models to only personnel authorized to know the information and to protect the reports from unauthorized access.
+
+3. (a) Subject to paragraph (b) of this subdivision, a frontier developer shall report any critical safety incident pertaining to one or more of its frontier models to the office within seventy-two hours from a determination that a critical safety incident has occurred or within seventy-two hours of the frontier developer learning facts sufficient to establish a reasonable belief that a critical safety incident has occurred.
+
+(b) If a frontier developer discovers that a critical safety incident poses an imminent risk of death or serious physical injury, the frontier developer shall disclose that incident within twenty-four hours to an authority, including any law enforcement agency or public safety agency with jurisdiction, that is appropriate based on the nature of that incident and as required by law.
+
+(c) A frontier developer that discovers information about a critical safety incident after filing the initial report required by this subdivision may file an amended report.
+
+4. The office shall review critical safety incident reports submitted by frontier developers and may review reports submitted by members of the public.
+
+5. (a) The office may transmit reports of critical safety incidents or summaries of any assessments of catastrophic risk from internal use of frontier models to other governmental entities at their discretion, considering for example and without limitation the following: the severity of any such incident, potential ongoing risks, legal or regulatory obligations, the need for coordinating with other governmental agencies or other entities and the availability of information. The office shall consider transmitting such reports or summaries to the office of the attorney general, as appropriate. Any report transmitted from the office to another governmental entity shall be exempt from disclosure under article six of the public officers law.
+
+(b) The office may consider, at its discretion, any risks related to trade secrets, public safety, cybersecurity of a frontier developer, or national security when transmitting reports.
+
+6. A report of a critical safety incident submitted to the office pursuant to this section and a report of assessments of catastrophic risk from internal use pursuant to section fourteen hundred twenty-one of this article, are exempt from disclosure under article six of the public officers law.
+
+7. (a) Beginning January first, two thousand twenty-eight, and annually thereafter, the office shall produce a report, that includes the following:
+
+(i) anonymized and aggregated information about critical safety incidents that have been reviewed by the office since the preceding report;
+
+(ii) any information that the office deems relevant to frontier model safety;
+
+(iii) recommended updates to this article, if any; and
+
+(iv) any developments relevant to the purposes of this article.
+
+(b) The office shall not include information in a report pursuant to this subdivision that would compromise the trade secrets or cybersecuri-
+
+ty of a frontier developer, public safety, or the national security of the United States or that would be prohibited by any federal or state law.
+
+(c) The office shall transmit a report pursuant to this subdivision to the governor, the temporary president and minority leader of the senate, the speaker and minority leader of the assembly, the chair and ranking member of the senate committee on internet and technology, and the chair and ranking member of the assembly committee on science and technology.
+
+8. The office may adopt regulations designating one or more federal laws, regulations, or guidance documents that meet all of the following conditions for the purposes of subdivision nine of this section:
+
+(a) (i) the law, regulation, or guidance document imposes or states standards or requirements for critical safety incident reporting that are substantially equivalent to, or stricter than, those required by subdivision three of this section; and
+
+(ii) the law, regulation, or guidance document described in subparagraph (i) of this paragraph does not need to require critical safety incident reporting to the state of New York; and
+
+(b) the law, regulation, or guidance document is intended to assess, detect, or mitigate the catastrophic risk.
+
+9. (a) A frontier developer that intends to comply with subdivision three of this section by complying with the requirements of, or meeting the standards stated by, a federal law, regulation, or guidance document designated pursuant to subdivision eight of this section shall declare its intent to do so to the office.
+
+(b) After a frontier developer has declared its intent pursuant to paragraph (a) of this subdivision, the following shall apply:
+
+(i) the frontier developer shall be deemed in compliance with subdivision three of this section to the extent that the frontier developer meets the standards of, or complies with the requirements imposed or stated by, the designated federal law, regulation, or guidance document until the frontier developer declares the revocation of that intent to the office or the office revokes a relevant regulation pursuant to subdivision ten of this section;
+
+(ii) the failure by a frontier developer to meet the standards of, or comply with the requirements stated by, the federal law, regulation, or guidance document designated pursuant to subdivision eight of this section shall constitute a violation of this article; and
+
+(iii) frontier developers who comply with subdivision three of this section by meeting such federal standards shall send copies of any critical safety incident reports required by such federal standards to the office concurrently with sending them to federal authorities.
+
+10. The office shall revoke a regulation adopted under subdivision eight of this section if the requirements of subdivision eight of this section are no longer met.
+
+§ 1423. Loss of equity. The loss of value of equity shall not count as damage to or loss of property for the purposes of this article.
+
+§ 1424. Duties and obligations. The duties and obligations imposed by this article are cumulative with any other duties or obligations imposed under other law and shall not be construed to relieve any party from any other duties or obligations imposed under other law and do not limit any rights or remedies under existing law.
+
+§ 1425. Scope. This article shall only apply to frontier models that are developed, deployed, or operating in whole or in part in New York state.
+
+§ 1426. Exceptions. Nothing in this article shall apply to:
+
+1. accredited colleges and universities in New York state, to the extent such colleges and universities are engaging in academic research regarding artificial intelligence models; or
+
+2. the Empire AI consortium or the institute, as such terms are defined by section three hundred sixty-one of the economic development law.
+
+§ 1427. Violations. 1. The attorney general may bring a civil action to recover a civil penalty in an amount not to exceed one million dollars for a first violation and in an amount not to exceed three million dollars per subsequent violation, determined based on the severity of the violation where a large frontier developer fails to publish or transmit a compliant document required to be published or transmitted under this article, makes a statement in violation of subdivision four of section fourteen hundred twenty-one of this article, fails to report an incident as required by section fourteen hundred twenty-two of this article, or fails to comply with its own frontier AI framework.
+
+2. Nothing in this article shall be construed to establish, authorize or create a private right of action associated with violations of this article.
+
+3. Nothing in this article shall be construed to prevent a large frontier developer from asserting that another person, entity, or factor, may be responsible for any alleged harm, injury or damage resulting from a catastrophic risk or critical safety incident.
+
+§ 1428. Large frontier developer disclosure. 1. Except as otherwise provided in this section, no large frontier developer may develop, deploy, or operate a frontier model, in whole or in part in New York state, without having a current disclosure statement filed with the office and paying the required share.
+
+2. The disclosure statement shall be filed in the form and the manner prescribed by the office and shall contain all the information required by the office. It shall be renewed every two years, whenever ownership of the frontier model is transferred or whenever there is a material change to the information reported in the previously filed disclosure statement, whichever occurs earlier.
+
+3. Such disclosure statement shall identify:
+
+(a) the identity of the large frontier developer and all names under which such large frontier developer conducts business;
+
+(b) the address of the principal place of business and the address of each office it maintains in New York state;
+
+(c) in the event such large frontier developer or the ultimate parent of such large frontier developer is a privately or closely held company, a list of all persons or entities that beneficially own a five percent or greater interest in such large frontier developer at the time of the filing of the disclosure statement and a list of persons who formerly beneficially owned a five percent or greater interest in such owner or its predecessors in the preceding five years. In the event such owner or the ultimate parent is a publicly traded company, such owner shall file a list of all persons or entities that beneficially own a fifty percent or greater interest in the large frontier developer at the time of registration; and
+
+(d) the name and contact information of a point of contact, secondary contact, and tertiary contact for such large frontier developer. Such point of contact shall be responsible for receiving inquiries relating to this article from the office or other governmental entities.
+
+4. Large frontier developers shall be assessed in pro rata shares by the department to defray the operating expenses, including all direct
+
+and indirect costs, of administering the obligations imposed by this article.
+
+5. If any person develops, deploys, or operates a large frontier model in part in New York state without a current disclosure filed with the office as required by this section, submits false information in its disclosure or fails to timely pay any assessment required by this article, in addition to any other penalty or liability that may be imposed under this article, the office may, after notice and hearing, levy civil penalties, fees, and costs as follows:
+
+(a) a civil penalty of one thousand dollars for each day the entity fails to file a disclosure as required by this section or fails to correct false information; and
+
+(b) an amount equal to the assessments owed.
+
+6. The office shall maintain and publish a list of large frontier developers who have filed disclosure statements, however such publication shall not include the contact information set forth in paragraph (d) of subdivision three of this section.
+
+§ 1429. Rulemaking authority. The office is hereby authorized to adopt rules and regulations to implement the provisions of this article as needed. To the extent the office determines that doing so will facilitate safety and transparency consistent with the underlying purpose of this article, the office may consider additional reporting or publication requirements for information to facilitate safety and transparency, including but not limited to, post-critical safety incident information, sharing plans and protocols, and the transmission of frontier AI frameworks to the office.
+
+§ 3. Section 3 of a chapter of the laws of 2025 amending the general business law relating to the training and use of artificial intelligence frontier models, as proposed in legislative bills numbers S. 6953-B and A. 6453-B, is amended to read as follows:
+
+§ 3. This act shall take effect [on the ninetieth day after it shall have become a law] January 1, 2027.
+
+§ 4. Severability. If any clause, sentence, paragraph, subdivision, section or part of this act shall be adjudged by any court of competent jurisdiction to be invalid, such judgment shall not affect, impair, or invalidate the remainder thereof, but shall be confined in its operation to the clause, sentence, paragraph, subdivision, section, or part thereof directly involved in the controversy in which such judgment shall have been made.
+
+§ 5. This act shall take effect immediately; provided, however that the provisions of sections one, two and four of this act shall take effect on the same date and in the same manner as a chapter of the laws of 2025 amending the general business law relating to the training and use of artificial intelligence frontier models, as proposed in legislative bills numbers S. 6953-B and A. 6453-B, takes effect.
