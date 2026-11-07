@@ -7,7 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "extract-laws": "tsx --conditions=react-server scripts/extract-laws.ts"
+    "extract-laws": "tsx --conditions=react-server scripts/extract-laws.ts",
+    "test": "tsx --test src/lib/*.test.ts"
   },
   "dependencies": {
     "@base-ui/react": "^1.9.0",

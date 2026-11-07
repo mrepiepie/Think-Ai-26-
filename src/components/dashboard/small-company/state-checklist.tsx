@@ -1,50 +1,95 @@
 "use client";
 
-import { ArrowUpRight, CheckCircle2, Circle, MapPinned, Quote, ScrollText } from "lucide-react";
+import { ArrowUpRight, ChevronRight, CircleHelp, FilePenLine, MapPinned, Quote } from "lucide-react";
 import { useId, useState } from "react";
-import { buttonVariants } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import { readTheLawLink, verifiedRules } from "@/data/law-library";
-import { stateName } from "@/data/states";
-import type { Law, LawAssessment } from "@/data/types";
-import type { StateRollup } from "@/lib/compliance";
-import type { RuleItem, RuleObligation } from "@/lib/rule-card";
+import { jurisdictionName } from "@/data/states";
+import type { ComplianceStatus } from "@/data/types";
+import type { Duty, JurisdictionRollup, LawMatch } from "@/lib/matching";
+import { noticeQuotes } from "@/lib/notice";
+import type { RuleItem } from "@/lib/rule-card";
 import { cn } from "@/lib/utils";
 import { Eyebrow, Panel } from "../panel";
 import { LawTags, StatusPill } from "./status";
 
-/** Right panel: per-state obligations for the selected state. */
+/** Right panel: computed per-jurisdiction checklist. */
 export function StateChecklist({
-  state,
+  jurisdiction,
   rollup,
+  hasProfile,
+  checked,
+  onToggle,
+  today,
+  onDraft,
+  isExample,
   className,
 }: {
-  state: string | null;
-  rollup: StateRollup | undefined;
+  jurisdiction: string | null;
+  rollup: JurisdictionRollup | undefined;
+  hasProfile: boolean;
+  checked: ReadonlySet<string>;
+  onToggle: (dutyId: string) => void;
+  today: string;
+  onDraft: (match: LawMatch) => void;
+  isExample: boolean;
   className?: string;
 }) {
+  const applying = rollup?.laws.filter((l) => l.applies) ?? [];
+  const notApplying = rollup?.laws.filter((l) => !l.applies) ?? [];
   return (
-    <Panel title="State checklist" sample className={className}>
-      {!state ? (
-        <EmptyState text="Click a state on the map to see its checklist." />
+    <Panel title="Checklist" sample={isExample} className={className}>
+      {!hasProfile ? (
+        <EmptyState text="Describe your AI product, confirm what we found, then run matching. Your checklist appears here." />
+      ) : !jurisdiction ? (
+        <EmptyState text="Click a state or the NYC pin on the map to see its checklist." />
       ) : (
         <div>
           <div className="sticky top-0 z-10 flex items-center justify-between gap-2 border-b border-border bg-card/95 px-3 py-2.5 backdrop-blur">
             <div className="min-w-0">
-              <div className="truncate text-sm font-semibold">{stateName(state)}</div>
+              <div className="truncate text-sm font-semibold">{jurisdictionName(jurisdiction)}</div>
               <div className="font-mono text-[10px] tracking-wider text-muted-foreground uppercase">
-                {rollup ? `${rollup.items.length} tracked law${rollup.items.length === 1 ? "" : "s"}` : "No tracked laws"}
+                {rollup
+                  ? `${applying.length} of ${rollup.laws.length} tracked law${rollup.laws.length === 1 ? "" : "s"} apply`
+                  : "No tracked laws"}
+                {rollup && rollup.needsReview > 0 && (
+                  <span className="text-status-soon"> · {rollup.needsReview} need review</span>
+                )}
               </div>
             </div>
             {rollup && <StatusPill status={rollup.status} />}
           </div>
           {!rollup ? (
-            <EmptyState text="No tracked laws for this state in the sample set, or they are hidden by your filters." />
+            <EmptyState text="No tracked laws for this jurisdiction, or they are hidden by your filters." />
           ) : (
-            <ul className="divide-y divide-border">
-              {rollup.items.map(({ law, assessment }) => (
-                <LawCard key={law.id} law={law} assessment={assessment} />
-              ))}
-            </ul>
+            <>
+              <ul className="divide-y divide-border">
+                {applying.map((m) => (
+                  <LawCard
+                    key={m.law.id}
+                    match={m}
+                    status={rollup.lawStatus[m.law.id]}
+                    checked={checked}
+                    onToggle={onToggle}
+                    today={today}
+                    onDraft={onDraft}
+                  />
+                ))}
+              </ul>
+              {notApplying.length > 0 && (
+                <div className="space-y-1.5 border-t border-border px-3 py-3">
+                  <Eyebrow>Laws that don&apos;t apply to you</Eyebrow>
+                  <ul className="space-y-1.5">
+                    {notApplying.map((m) => (
+                      <li key={m.law.id} className="text-xs">
+                        <span className="font-medium">{m.law.name}</span>
+                        <span className="text-muted-foreground">: {m.reason}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </>
           )}
         </div>
       )}
@@ -52,65 +97,101 @@ export function StateChecklist({
   );
 }
 
-function LawCard({ law, assessment }: { law: Law; assessment: LawAssessment }) {
-  const na = assessment.status === "not-applicable";
+function LawCard({
+  match,
+  status,
+  checked,
+  onToggle,
+  today,
+  onDraft,
+}: {
+  match: LawMatch;
+  status: ComplianceStatus;
+  checked: ReadonlySet<string>;
+  onToggle: (id: string) => void;
+  today: string;
+  onDraft: (m: LawMatch) => void;
+}) {
+  const { law } = match;
   const rules = verifiedRules(law.id);
   const lawLink = readTheLawLink(law);
-  const fromLaw = rules && rules.obligations.length > 0;
+  const canDraft = noticeQuotes(match).length > 0;
+  const done = match.applicable.filter((d) => checked.has(d.id)).length;
+
   return (
     <li className="space-y-2.5 px-3 py-3">
       <div className="flex items-start justify-between gap-2">
         <div className="min-w-0 space-y-1">
           <div className="text-[13px] leading-tight font-semibold">{law.name}</div>
-          <LawTags tags={law.tags} />
+          <span className="flex flex-wrap gap-1">
+            <LawTags tags={law.tags} />
+            {!match.rule.extracted && (
+              <span
+                className="rounded-sm border border-status-soon/50 px-1 font-mono text-[9px] tracking-wider text-status-soon uppercase"
+                title="No rule card has been extracted from the official text yet. Duties below come from the PRD summary only."
+              >
+                Rules not extracted yet
+              </span>
+            )}
+          </span>
         </div>
-        <StatusPill status={assessment.status} />
+        <StatusPill status={status} />
       </div>
-      <p className="text-xs leading-relaxed text-muted-foreground">{assessment.reason}</p>
+      <p className="text-xs leading-relaxed text-muted-foreground">{match.reason}</p>
 
-      {!na && fromLaw && (
+      {canDraft && (
+        <Button variant="outline" size="xs" onClick={() => onDraft(match)}>
+          <FilePenLine data-icon="inline-start" />
+          Draft notice
+        </Button>
+      )}
+
+      {match.applicable.length > 0 && (
         <div className="space-y-1">
           <div className="flex items-baseline justify-between gap-2">
-            <Eyebrow>What the law requires</Eyebrow>
-            <span
-              className="font-mono text-[9px] tracking-wider text-muted-foreground uppercase"
-              title="Extracted by AI from the official law text. Each item shown has a quote that was matched word-for-word against that text. Not legal advice."
-            >
-              From official text
+            <Eyebrow>Your duties</Eyebrow>
+            <span className="font-mono text-[9.5px] text-muted-foreground">
+              {done}/{match.applicable.length} done
             </span>
           </div>
-          <ObligationList obligations={rules.obligations} />
-          {rules.unverifiedObligations > 0 && (
-            <p className="text-[10.5px] text-muted-foreground italic">
-              {rules.unverifiedObligations} more extracted obligation
-              {rules.unverifiedObligations === 1 ? "" : "s"}: Not verified (quote not found in the law text), so
-              not shown.
-            </p>
-          )}
+          <ul className="space-y-1.5">
+            {match.applicable.map((d) => (
+              <DutyRow key={d.id} duty={d} checked={checked.has(d.id)} onToggle={() => onToggle(d.id)} today={today} />
+            ))}
+          </ul>
         </div>
       )}
 
-      {!na && assessment.checklist.length > 0 && (
-        <div className="space-y-1">
-          <Eyebrow>{fromLaw ? "Your progress (sample)" : "Obligations"}</Eyebrow>
-          <ul className="space-y-1">
-            {assessment.checklist.map((item) => (
-              <li key={item.task} className="flex items-start gap-2 text-xs">
-                {item.done ? (
-                  <CheckCircle2 className="mt-px size-3.5 shrink-0 text-status-compliant" aria-label="Done" />
-                ) : (
-                  <Circle className="mt-px size-3.5 shrink-0 text-muted-foreground" aria-label="To do" />
-                )}
-                <span className={cn("flex-1", item.done && "text-muted-foreground line-through decoration-muted-foreground/40")}>
-                  {item.task}
-                </span>
-                <span className="shrink-0 font-mono text-[9.5px] text-muted-foreground">
-                  {item.deadline}
-                </span>
+      {match.needsReview.length > 0 && (
+        <div className="space-y-1 rounded-md border border-status-soon/40 bg-status-soon/5 p-2">
+          <Eyebrow className="text-status-soon">Needs review ({match.needsReview.length})</Eyebrow>
+          <p className="text-[10.5px] text-muted-foreground">
+            We can&apos;t tell from your profile whether these apply. They are not counted as done or as applying.
+          </p>
+          <ul className="space-y-1.5">
+            {match.needsReview.map((d) => (
+              <li key={d.id} className="text-xs">
+                <div className="flex items-start gap-1.5">
+                  <CircleHelp className="mt-px size-3.5 shrink-0 text-status-soon" aria-hidden />
+                  <span className="flex-1">
+                    {d.text}
+                    <span className="block text-[10.5px] text-muted-foreground">{d.reason}</span>
+                  </span>
+                </div>
+                {d.quote && <QuoteToggle quote={d.quote} className="pl-5" />}
               </li>
             ))}
           </ul>
         </div>
+      )}
+
+      {match.notApplicable.length > 0 && <NotApplicableList duties={match.notApplicable} />}
+
+      {match.unverifiedCount > 0 && (
+        <p className="text-[10.5px] text-muted-foreground italic">
+          {match.unverifiedCount} more extracted obligation{match.unverifiedCount === 1 ? "" : "s"}: not verified (quote
+          not found in the law text), so not shown.
+        </p>
       )}
 
       <dl className="grid grid-cols-[72px_1fr] gap-x-2 gap-y-1 text-[11px]">
@@ -156,45 +237,91 @@ function LawCard({ law, assessment }: { law: Law; assessment: LawAssessment }) {
   );
 }
 
-const OBLIGATIONS_SHOWN = 6;
+const DATE_FMT = new Intl.DateTimeFormat("en-US", { month: "short", day: "numeric", year: "numeric", timeZone: "UTC" });
 
-/** Verified obligations from the rule card; long lists collapse. */
-function ObligationList({ obligations }: { obligations: RuleObligation[] }) {
-  const [showAll, setShowAll] = useState(false);
-  const visible = showAll ? obligations : obligations.slice(0, OBLIGATIONS_SHOWN);
-  const hidden = obligations.length - OBLIGATIONS_SHOWN;
+function DutyRow({
+  duty,
+  checked,
+  onToggle,
+  today,
+}: {
+  duty: Duty;
+  checked: boolean;
+  onToggle: () => void;
+  today: string;
+}) {
+  const id = useId();
+  const inForce = duty.effectiveDate <= today;
   return (
-    <>
-      <ul className="space-y-1.5">
-        {visible.map((o) => (
-          <li key={o.quote} className="text-xs">
-            <div className="flex items-start gap-2">
-              <ScrollText className="mt-px size-3.5 shrink-0 text-primary/70" aria-hidden />
-              <span className="flex-1">
-                {o.who && <span className="text-muted-foreground">{o.who}: </span>}
-                {o.text}
-              </span>
-              {o.timing && (
-                <span className="max-w-[40%] shrink-0 text-right font-mono text-[9.5px] text-muted-foreground">
-                  {o.timing}
-                </span>
+    <li className="text-xs">
+      <div className="flex items-start gap-2">
+        <input
+          id={id}
+          type="checkbox"
+          checked={checked}
+          onChange={onToggle}
+          className="mt-0.5 size-3.5 shrink-0 accent-[var(--status-compliant)]"
+        />
+        <label htmlFor={id} className="flex-1 cursor-pointer">
+          <span className={cn(checked && "text-muted-foreground line-through decoration-muted-foreground/40")}>
+            {duty.text}
+          </span>
+          <span className="mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-0.5 font-mono text-[9.5px] text-muted-foreground">
+            <span
+              className={cn(
+                "rounded-sm border px-1 uppercase",
+                inForce ? "border-status-noncompliant/50 text-status-noncompliant" : "border-status-soon/50 text-status-soon",
               )}
-            </div>
-            <QuoteToggle quote={o.quote} className="pl-5.5" />
-          </li>
-        ))}
-      </ul>
-      {hidden > 0 && (
-        <button
-          type="button"
-          onClick={() => setShowAll((v) => !v)}
-          aria-expanded={showAll}
-          className="font-mono text-[9.5px] tracking-wider text-primary uppercase hover:underline focus-visible:underline focus-visible:outline-none"
-        >
-          {showAll ? "Show fewer" : `Show all ${obligations.length}`}
-        </button>
+            >
+              {inForce ? "In force" : `From ${DATE_FMT.format(new Date(duty.effectiveDate + "T00:00:00Z"))}`}
+            </span>
+            {duty.timing && <span>{duty.timing}</span>}
+            {duty.source === "prd" && <span title="Not extracted from the law text yet">From PRD summary</span>}
+          </span>
+        </label>
+      </div>
+      {duty.quote && <QuoteToggle quote={duty.quote} className="pl-5.5" />}
+    </li>
+  );
+}
+
+/** Collapsed "Doesn't apply to you" section, grouped by reason. */
+function NotApplicableList({ duties }: { duties: Duty[] }) {
+  const [open, setOpen] = useState(false);
+  const id = useId();
+  const groups = new Map<string, Duty[]>();
+  for (const d of duties) groups.set(d.reason, [...(groups.get(d.reason) ?? []), d]);
+  return (
+    <div>
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        aria-expanded={open}
+        aria-controls={id}
+        className="flex items-center gap-1 font-mono text-[10px] tracking-wider text-muted-foreground uppercase hover:text-foreground focus-visible:text-foreground focus-visible:outline-none"
+      >
+        <ChevronRight className={cn("size-3 transition-transform", open && "rotate-90")} aria-hidden />
+        Doesn&apos;t apply to you ({duties.length})
+      </button>
+      {open && (
+        <ul id={id} className="mt-1.5 space-y-2 border-l border-border pl-2">
+          {[...groups].map(([reason, items]) => (
+            <li key={reason} className="space-y-0.5">
+              <div className="text-[11px] font-medium">
+                {reason} <span className="font-mono text-[10px] text-muted-foreground">({items.length})</span>
+              </div>
+              <ul className="space-y-0.5">
+                {items.map((d) => (
+                  <li key={d.id} className="text-[11px] text-muted-foreground">
+                    {d.text}
+                  </li>
+                ))}
+              </ul>
+            </li>
+          ))}
+        </ul>
       )}
-    </>
+    </div>
   );
 }
 

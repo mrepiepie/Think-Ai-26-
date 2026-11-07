@@ -1,5 +1,6 @@
 "use client";
 
+import type { KeyboardEvent, MouseEvent } from "react";
 import { clusterRadius, type Cluster } from "@/lib/cluster";
 import { MARKER_COLOR } from "./map-theme";
 import type { MapMarker, MapPin } from "./map-types";
@@ -94,24 +95,66 @@ export function MarkerLayer({
   );
 }
 
-/** City pins (e.g. NYC) drawn as a small crosshair with a label. */
-export function PinLayer({ pins }: { pins: { pin: MapPin; x: number; y: number }[] }) {
+/**
+ * City pins (e.g. NYC) drawn as a small crosshair with a label. When
+ * `onPinClick` is set they are buttons (click / Enter / Space).
+ */
+export function PinLayer({
+  pins,
+  onPinClick,
+  selectedId,
+  onHover,
+}: {
+  pins: { pin: MapPin; x: number; y: number }[];
+  onPinClick?: (id: string) => void;
+  selectedId?: string | null;
+  onHover?: (id: string | null) => void;
+}) {
   return (
-    <g className="pointer-events-none">
-      {pins.map(({ pin, x, y }) => (
-        <g key={pin.label} transform={`translate(${x},${y})`}>
-          <circle r={6} fill="none" stroke="white" strokeOpacity={0.7} />
-          <circle r={1.8} fill="white" />
-          <text
-            x={9}
-            dy="0.35em"
-            className="fill-white font-mono text-[10px] font-semibold tracking-wider"
-            style={{ paintOrder: "stroke", stroke: "black", strokeWidth: 3 }}
-          >
-            {pin.label}
-          </text>
-        </g>
-      ))}
+    <g className={onPinClick ? undefined : "pointer-events-none"}>
+      {pins.map(({ pin, x, y }) => {
+        const id = pin.id ?? pin.label;
+        const color = pin.color ?? "white";
+        const selected = selectedId === id;
+        const interactive = onPinClick
+          ? {
+              role: "button",
+              tabIndex: 0,
+              "aria-label": `${pin.label}: open checklist`,
+              "aria-pressed": selected,
+              className: "cursor-pointer outline-none",
+              onClick: (e: MouseEvent) => {
+                e.stopPropagation();
+                onPinClick(id);
+              },
+              onKeyDown: (e: KeyboardEvent) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault();
+                  onPinClick(id);
+                }
+              },
+              onPointerEnter: () => onHover?.(id),
+              onPointerLeave: () => onHover?.(null),
+            }
+          : {};
+        return (
+          <g key={id} transform={`translate(${x},${y})`} {...interactive}>
+            {onPinClick && <circle r={12} fill="transparent" />}
+            {pin.color && <circle r={9} fill={color} opacity={0.18} />}
+            <circle r={6} fill="none" stroke={color} strokeOpacity={pin.color ? 1 : 0.7} strokeWidth={pin.color ? 2 : 1} />
+            <circle r={2.2} fill={color} />
+            {selected && <circle r={10} fill="none" stroke="white" strokeWidth={1.5} />}
+            <text
+              x={12}
+              dy="0.35em"
+              className="pointer-events-none fill-white font-mono text-[10px] font-semibold tracking-wider"
+              style={{ paintOrder: "stroke", stroke: "black", strokeWidth: 3 }}
+            >
+              {pin.label}
+            </text>
+          </g>
+        );
+      })}
     </g>
   );
 }

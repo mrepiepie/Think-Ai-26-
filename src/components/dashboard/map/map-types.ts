@@ -11,9 +11,13 @@ export interface MapMarker {
 }
 
 export interface MapPin {
+  /** Stable id passed to onPinClick (defaults to label). */
+  id?: string;
   label: string;
   lon: number;
   lat: number;
+  /** Ring/dot color, e.g. a compliance status color (default white). */
+  color?: string | null;
 }
 
 /** Props shared by the globe and the flat map. */
@@ -29,5 +33,10 @@ export interface MapLayerProps {
   onMarkerClick?: (id: string) => void;
   markerTooltip?: (markers: MapMarker[]) => ReactNode;
   pins?: MapPin[];
+  /** Makes city pins clickable (e.g. NYC as its own jurisdiction). */
+  onPinClick?: (id: string) => void;
+  selectedPinId?: string | null;
+  /** Hover content for a pin. */
+  pinTooltip?: (id: string) => ReactNode;
   showCoordinates?: boolean;
 }

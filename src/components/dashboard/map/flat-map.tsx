@@ -29,6 +29,7 @@ const MAX_ZOOM = 48;
 
 type Hover =
   | { type: "state"; code: string }
+  | { type: "pin"; id: string }
   | { type: "county"; name: string; state: string }
   | { type: "cluster"; items: MapMarker[] };
 
@@ -55,6 +56,9 @@ export function FlatMap({
   onMarkerClick,
   markerTooltip,
   pins,
+  onPinClick,
+  selectedPinId,
+  pinTooltip,
   showCoordinates,
   focusState,
   showCounties,
@@ -218,7 +222,9 @@ export function FlatMap({
   const tooltip =
     hover?.type === "state"
       ? stateTooltip?.(hover.code)
-      : hover?.type === "county"
+      : hover?.type === "pin"
+        ? (pinTooltip?.(hover.id) ?? null)
+        : hover?.type === "county"
         ? (
             <span>
               <span className="font-medium">{hover.name} County</span>
@@ -297,7 +303,12 @@ export function FlatMap({
             />
           )}
         </g>
-        <PinLayer pins={pinPoints} />
+        <PinLayer
+          pins={pinPoints}
+          onPinClick={onPinClick}
+          selectedId={selectedPinId}
+          onHover={(id) => setHover(id ? { type: "pin", id } : null)}
+        />
         <MarkerLayer
           clusters={clusters}
           selectedId={selectedMarkerId}

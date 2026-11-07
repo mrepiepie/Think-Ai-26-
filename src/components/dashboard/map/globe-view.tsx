@@ -26,6 +26,7 @@ const CLUSTER_PX = 30;
 
 type Hover =
   | { type: "state"; code: string }
+  | { type: "pin"; id: string }
   | { type: "cluster"; items: MapMarker[] };
 
 export function GlobeView({
@@ -39,6 +40,9 @@ export function GlobeView({
   onMarkerClick,
   markerTooltip,
   pins,
+  onPinClick,
+  selectedPinId,
+  pinTooltip,
   showCoordinates,
 }: MapLayerProps) {
   const theme = MAP_THEME[tone];
@@ -205,7 +209,9 @@ export function GlobeView({
   const tooltip =
     hover?.type === "state"
       ? stateTooltip?.(hover.code)
-      : hover?.type === "cluster"
+      : hover?.type === "pin"
+        ? (pinTooltip?.(hover.id) ?? null)
+        : hover?.type === "cluster"
         ? markerTooltip?.(hover.items)
         : null;
 
@@ -315,7 +321,12 @@ export function GlobeView({
               strokeWidth={1}
               className="pointer-events-none"
             />
-            <PinLayer pins={pinPoints} />
+            <PinLayer
+          pins={pinPoints}
+          onPinClick={onPinClick}
+          selectedId={selectedPinId}
+          onHover={(id) => setHover(id ? { type: "pin", id } : null)}
+        />
             <MarkerLayer
               clusters={clusters}
               selectedId={selectedMarkerId}

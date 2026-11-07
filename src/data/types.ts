@@ -62,37 +62,13 @@ export type ComplianceStatus =
   | "non-compliant"
   | "not-applicable";
 
-export interface ProductFeature {
-  label: string;
-  classification: string;
-}
-
+/** Display info for the fictional sample company ("Load example"). */
 export interface CompanyProfile {
   name: string;
   tagline: string;
   productName: string;
   productDescription: string;
   employees: number;
-  features: ProductFeature[];
-  /** Where the product has users, as shown in the profile. */
-  markets: { label: string; state: StateCode }[];
-  /** City-level pins drawn on the map (e.g. NYC). */
-  cityPins: { label: string; lon: number; lat: number }[];
-}
-
-export interface ChecklistItem {
-  task: string;
-  done: boolean;
-  /** Deadline line, e.g. "Now (in force since Jan 1, 2026)". */
-  deadline: string;
-}
-
-export interface LawAssessment {
-  lawId: string;
-  status: ComplianceStatus;
-  /** One-line reason for the status. */
-  reason: string;
-  checklist: ChecklistItem[];
 }
 
 export interface LawChangeAlert {

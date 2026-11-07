@@ -66,3 +66,8 @@ export function stateName(code: string): string {
   const fips = FIPS_BY_CODE[code];
   return fips ? STATES[fips].name : code;
 }
+
+/** Jurisdiction keys are USPS codes, plus "NYC" for New York City. */
+export function jurisdictionName(key: string): string {
+  return key === "NYC" ? "New York City" : stateName(key);
+}
