@@ -17,9 +17,9 @@ export const LAWS: Law[] = [
     jurisdiction: "New York City",
     state: "NY",
     tags: ["in-force"],
-    // Logic uses the rule-card date (effectiveDate/0, Jan 1, 2023); the PRD gives the enforcement start.
-    effective: "In effect Jan 1, 2023 (law text) · Enforced since July 2023 (PRD source)",
-    effectiveDate: "2023-07-01",
+    // Logic uses the rule-card date (effectiveDate/0, Jan 1, 2023); the NYC DCWP page gives the enforcement start.
+    effective: "In effect Jan 1, 2023 (law text) · Enforced since July 5, 2023 (NYC DCWP)",
+    effectiveDate: "2023-07-05",
     appliesTo: "Employers using AI hiring tools in New York City",
     summary:
       "AI hiring tools need an annual independent bias audit, a public audit summary, and notice to candidates.",
@@ -40,6 +40,10 @@ export const LAWS: Law[] = [
     ],
     smallCompanyRelevance: "likely",
     sources: [
+      {
+        label: "NYC DCWP (official)",
+        url: "https://www.nyc.gov/site/dca/about/automated-employment-decision-tools.page",
+      },
       {
         label: "NY State Comptroller audit (Dec 2025)",
         url: "https://www.osc.ny.gov/state-agencies/audits/2025/12/02/enforcement-local-law-144-automated-employment-decision-tools",
@@ -119,7 +123,7 @@ export const LAWS: Law[] = [
     name: "Colorado SB 26-189",
     jurisdiction: "Colorado",
     state: "CO",
-    tags: ["coming-soon"],
+    tags: ["coming-soon", "enforcement-paused"],
     effective: "Takes effect Jan 1, 2027",
     effectiveDate: "2027-01-01",
     appliesTo:
@@ -138,6 +142,7 @@ export const LAWS: Law[] = [
     notes: [
       "SB 24-205 was delayed, challenged by xAI (Apr 9, 2026), stayed (Apr 27), then repealed and replaced by SB 26-189, signed May 14, 2026.",
       "AG rulemaking hearing held Oct 26, 2026; final rules due by Jan 1, 2027.",
+      "Enforcement of SB 26-189 is also paused: the Apr 27, 2026 stay's terms cover legislation replacing SB 24-205. The AG may not start enforcement until 14 days after the court rules on xAI's preliminary-injunction motion (to be filed within 28 days after the rules are final), and the AG said he won't enforce until rulemaking is complete. The Jan 1, 2027 effective date is unchanged.",
     ],
     smallCompanyRelevance: "likely",
     sources: [
@@ -148,6 +153,18 @@ export const LAWS: Law[] = [
       {
         label: "Stack Cyber",
         url: "https://stackcyber.com/posts/ai-colorado-laws",
+      },
+      {
+        label: "Warden AI: enforcement stay",
+        url: "https://www.warden-ai.com/resources/colorado-sb-26-189-enforcement-stay",
+      },
+      {
+        label: "LawFuel",
+        url: "https://www.lawfuel.com/colorado-ai-act-2026-sb-26-189/",
+      },
+      {
+        label: "Hoog Law",
+        url: "https://hooglaw.com/ai-compliance/",
       },
     ],
   },

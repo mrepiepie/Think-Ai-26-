@@ -46,7 +46,11 @@ export function LawTags({ tags }: { tags: LawStatusTag[] }) {
           key={tag}
           className={cn(
             "rounded-sm border px-1 font-mono text-[9px] tracking-wider text-muted-foreground uppercase",
-            tag === "challenged" ? "border-primary/50 text-primary" : "border-border",
+            tag === "challenged"
+              ? "border-primary/50 text-primary"
+              : tag === "enforcement-paused"
+                ? "border-status-soon/50 text-status-soon"
+                : "border-border",
           )}
         >
           {TAG_LABEL[tag]}

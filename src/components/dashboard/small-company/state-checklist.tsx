@@ -6,7 +6,7 @@ import { Button, buttonVariants } from "@/components/ui/button";
 import { readTheLawLink, verifiedRules } from "@/data/law-library";
 import { jurisdictionName } from "@/data/states";
 import type { ComplianceStatus } from "@/data/types";
-import { formatDay } from "@/lib/compliance";
+import { enforcementNote, formatDay } from "@/lib/compliance";
 import { checkboxLabel, type Duty, type JurisdictionRollup, type LawMatch } from "@/lib/matching";
 import { noticeQuotes } from "@/lib/notice";
 import type { RuleItem } from "@/lib/rule-card";
@@ -121,6 +121,7 @@ function LawCard({
   const lawLink = readTheLawLink(law);
   const canDraft = noticeQuotes(match).length > 0;
   const done = match.applicable.filter((d) => checked.has(d.id)).length;
+  const note = enforcementNote(law);
 
   return (
     <li className="space-y-2.5 px-3 py-3">
@@ -141,6 +142,7 @@ function LawCard({
         </div>
         <StatusPill status={status} label={statusLabel} />
       </div>
+      {note && <p className="text-right text-[10.5px] font-medium text-status-soon">{note}</p>}
       <p className="text-xs leading-relaxed text-muted-foreground">{match.reason}</p>
 
       {canDraft && (

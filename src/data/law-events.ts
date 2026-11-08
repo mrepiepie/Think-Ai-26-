@@ -62,8 +62,8 @@ const PRD = {
   coSecurityBoulevard:
     "https://securityboulevard.com/2026/11/us-state-ai-laws-in-force-what-an-enterprise-deployer-actually-owes/",
   coStackCyber: "https://stackcyber.com/posts/ai-colorado-laws",
-  nycAudit:
-    "https://www.osc.ny.gov/state-agencies/audits/2025/12/02/enforcement-local-law-144-automated-employment-decision-tools",
+  coWardenAi: "https://www.warden-ai.com/resources/colorado-sb-26-189-enforcement-stay",
+  nycDcwp: "https://www.nyc.gov/site/dca/about/automated-employment-decision-tools.page",
   nycDlaPiper:
     "https://www.dlapiper.com/en/insights/publications/2026/01/critical-audit-of-nyc-ai-hiring-law-signals-increased-risk-for-employers",
   nyRaise: "https://www.jdsupra.com/legalnews/new-york-finalizes-raise-act-for-8270433/",
@@ -186,6 +186,18 @@ export const LAW_EVENTS: LawEvent[] = [
     evidence: "repealed and replaced by SB 26-189, signed May 14, 2026",
   },
   {
+    id: "co-sb26-189-stay-covers",
+    date: "2026-04-27",
+    lawId: "co-sb26-189",
+    type: "stayed",
+    description:
+      "Enforcement of Colorado SB 26-189 is also paused: the Apr 27, 2026 stay's terms cover legislation replacing SB 24-205. The Jan 1, 2027 effective date is unchanged.",
+    sourceUrl: PRD.coWardenAi,
+    sourceKind: "PRD section 3",
+    evidence:
+      "Enforcement of SB 26-189 is also paused: the Apr 27, 2026 stay's terms cover legislation replacing SB 24-205.",
+  },
+  {
     id: "co-sb24-205-stayed",
     date: "2026-04-27",
     lawId: "co-sb26-189",
@@ -297,13 +309,13 @@ export const LAW_EVENTS: LawEvent[] = [
   },
   {
     id: "nyc-enforced",
-    date: "2023-07",
+    date: "2023-07-05",
     lawId: "nyc-ll144",
     type: "enforcement",
-    description: "New York City begins enforcing Local Law 144.",
-    sourceUrl: PRD.nycAudit,
+    description: "New York City's DCWP begins enforcing Local Law 144.",
+    sourceUrl: PRD.nycDcwp,
     sourceKind: "PRD section 3",
-    evidence: "New York City Local Law 144 (enforced since July 2023)",
+    evidence: "DCWP will begin enforcement of this law and rule on July 5, 2023",
   },
   {
     id: "nyc-effective",

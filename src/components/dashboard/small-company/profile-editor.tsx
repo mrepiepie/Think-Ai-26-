@@ -153,6 +153,10 @@ export function ProfileEditor({
             </Chip>
           ))}
         </div>
+        <p className="text-[10.5px] leading-snug text-muted-foreground">
+          Developer = you build or sell the AI. Deployer/operator = you use it or offer it to your own users. Pick Both if
+          you do both.
+        </p>
         {profile.roleQuote && <QuoteLine quote={profile.roleQuote} />}
       </div>
 

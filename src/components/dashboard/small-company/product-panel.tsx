@@ -15,7 +15,7 @@ import { Eyebrow, Panel } from "../panel";
 import { ProfileEditor, type EditableProfile } from "./profile-editor";
 import { StatusDot } from "./status";
 
-const TAGS: LawStatusTag[] = ["in-force", "coming-soon", "challenged"];
+const TAGS: LawStatusTag[] = ["in-force", "coming-soon", "challenged", "enforcement-paused"];
 
 export type ReaderState =
   | { status: "idle" }

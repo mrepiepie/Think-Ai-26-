@@ -6,13 +6,20 @@ export const DEFAULT_FILTERS: LawFilters = {
   "in-force": true,
   "coming-soon": true,
   challenged: true,
+  "enforcement-paused": true,
 };
 
 export const TAG_LABEL: Record<LawStatusTag, string> = {
   "in-force": "In force",
   "coming-soon": "Coming soon",
   challenged: "Challenged in court",
+  "enforcement-paused": "Enforcement paused (court order)",
 };
+
+/** Shown beside a law's status: a pause changes neither its dates nor its duties. */
+export function enforcementNote(law: Pick<Law, "tags">): string | null {
+  return law.tags.includes("enforcement-paused") ? "Enforcement currently paused by a court order" : null;
+}
 
 /**
  * Generic status labels (legend, counts). We never say "compliant" or

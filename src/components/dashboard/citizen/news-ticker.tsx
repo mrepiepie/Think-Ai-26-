@@ -25,10 +25,6 @@ export function NewsTicker({
       className={`flex h-8 items-center overflow-hidden rounded-md border border-border bg-card/70 ${className ?? ""}`}
     >
       <div className="flex h-full shrink-0 items-center gap-2 border-r border-border px-3">
-        <span className="relative flex size-2">
-          <span className="absolute inline-flex size-full animate-ping rounded-full bg-live opacity-70 motion-reduce:animate-none" />
-          <span className="relative inline-flex size-2 rounded-full bg-live" />
-        </span>
         <span className="font-mono text-[10.5px] font-semibold tracking-widest text-live">SAMPLE FEED</span>
         <SampleBadge />
       </div>

@@ -13,6 +13,8 @@ CHANGE LOG
   Texas AG complaint portal, multi-state AG response to the Hugging
   Face incident, updated PJM figures. Section 7 demo and section 8
   criterion 4 annotated to match. No decisions changed.
+- 8 Nov 2026: added the Colorado enforcement stay covering SB 26-189
+  and the official NYC DCWP enforcement date (July 5, 2023).
 
 ======================================================================
 1. ONE-LINE SUMMARY
@@ -124,6 +126,15 @@ EXAMPLE STATE LAWS
   Sources: https://securityboulevard.com/2026/11/us-state-ai-laws-in-force-what-an-enterprise-deployer-actually-owes/
            https://stackcyber.com/posts/ai-colorado-laws
            https://intellisee.com/intelligence/colorado-ai-act-sb-24-205-repeal-2026-compliance-briefing/
+  Enforcement of SB 26-189 is also paused: the Apr 27, 2026 stay's
+  terms cover legislation replacing SB 24-205. The AG may not start
+  enforcement until 14 days after the court rules on xAI's
+  preliminary-injunction motion (to be filed within 28 days after the
+  rules are final), and the AG said he won't enforce until rulemaking
+  is complete. The Jan 1, 2027 effective date is unchanged.
+  Sources: https://www.warden-ai.com/resources/colorado-sb-26-189-enforcement-stay
+           https://www.lawfuel.com/colorado-ai-act-2026-sb-26-189/
+           https://hooglaw.com/ai-compliance/
 - New York City Local Law 144 (enforced since July 2023): annual
   independent bias audit of AI hiring tools, public audit summary, and
   candidate notice; up to $1,500 per violation per day. The employer is
@@ -133,6 +144,9 @@ EXAMPLE STATE LAWS
   period).
   Sources: https://www.osc.ny.gov/state-agencies/audits/2025/12/02/enforcement-local-law-144-automated-employment-decision-tools
            https://www.dlapiper.com/en/insights/publications/2026/01/critical-audit-of-nyc-ai-hiring-law-signals-increased-risk-for-employers
+  Enforcement by NYC DCWP began July 5, 2023 (official: "DCWP will
+  begin enforcement of this law and rule on July 5, 2023").
+  Source: https://www.nyc.gov/site/dca/about/automated-employment-decision-tools.page
 - New York RAISE Act (signed Dec 19, 2025, rewritten Mar 27, 2026,
   effective Jan 1, 2027): frontier developers only; safety incidents
   must be reported within 72 hours (California SB 53: 15 days).

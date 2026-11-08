@@ -4,7 +4,7 @@ import { useState } from "react";
 import { NYC_PIN } from "@/data/company";
 import { jurisdictionName } from "@/data/states";
 import type { ComplianceStatus } from "@/data/types";
-import { STATUS_COLOR, STATUS_LABEL } from "@/lib/compliance";
+import { STATUS_COLOR, STATUS_LABEL, TAG_LABEL } from "@/lib/compliance";
 import type { JurisdictionRollup } from "@/lib/matching";
 import { FlatMap } from "../map/flat-map";
 import { GlobeView } from "../map/globe-view";
@@ -60,6 +60,9 @@ export function ComplianceMapPanel({
         {r?.laws.map((l) => (
           <div key={l.law.id} className="text-[11px] text-muted-foreground">
             {l.law.name}: {r.lawLabel[l.law.id].toLowerCase()}
+            {l.law.tags.includes("enforcement-paused") && (
+              <div className="text-status-soon">{TAG_LABEL["enforcement-paused"]}</div>
+            )}
           </div>
         ))}
         {r && r.needsReview > 0 && (

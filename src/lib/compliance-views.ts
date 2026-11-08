@@ -2,7 +2,7 @@ import { readTheLawLink, ruleCard } from "@/data/law-library";
 import { LAWS, LAWS_BY_ID } from "@/data/laws";
 import { jurisdictionName } from "@/data/states";
 import type { LawStatusTag } from "@/data/types";
-import { TAG_LABEL } from "./compliance";
+import { enforcementNote, TAG_LABEL } from "./compliance";
 import {
   LAW_RULES,
   LAW_RULES_BY_ID,
@@ -265,10 +265,12 @@ function dutyView(d: Duty, todayIso: string) {
 }
 
 function lawView(m: LawMatch, label: string, todayIso: string) {
+  const note = enforcementNote(m.law);
   const base = {
     law_id: m.law.id,
     title: m.law.name,
     status: label,
+    ...(note ? { status_note: note } : {}),
     applies: m.applies,
     reason: m.reason,
     effective: m.law.effective,

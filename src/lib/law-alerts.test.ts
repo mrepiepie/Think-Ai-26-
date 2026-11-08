@@ -4,9 +4,11 @@ import path from "node:path";
 import { describe, it } from "node:test";
 import { LAW_EVENTS } from "@/data/law-events";
 import { lawsVerified } from "@/data/law-library";
+import { LAWS, LAWS_BY_ID } from "@/data/laws";
 import sources from "../../data/laws/sources.json";
+import { DEFAULT_FILTERS, enforcementNote, lawPassesFilters, TAG_LABEL } from "./compliance";
 import { buildAlerts, buildDeadlines, impactLine, isUpcoming } from "./law-alerts";
-import { LAW_RULES, LAW_RULES_BY_ID, matchCompany, matchLaw } from "./matching";
+import { LAW_RULES, LAW_RULES_BY_ID, matchCompany, matchLaw, statusLabelFor } from "./matching";
 import { fillCompanyName } from "./notice";
 import { cleanCompanyName, ConfirmedProfile, readCompanyName } from "./product-profile";
 import { normalizeForMatch, verifyQuote } from "./quote-verify";
@@ -84,6 +86,72 @@ describe("law events: every one has a real source", () => {
         );
       }
     }
+  });
+});
+
+describe("NYC enforcement date", () => {
+  const DCWP = "https://www.nyc.gov/site/dca/about/automated-employment-decision-tools.page";
+
+  it("the event uses the exact day and quote from the official DCWP page", () => {
+    const e = LAW_EVENTS.find((x) => x.id === "nyc-enforced");
+    assert.equal(e?.date, "2023-07-05");
+    assert.equal(e?.sourceUrl, DCWP);
+    assert.equal(e?.sourceKind, "PRD section 3");
+    assert.equal(e?.evidence, "DCWP will begin enforcement of this law and rule on July 5, 2023");
+    const row = buildAlerts(LAW_EVENTS, null, NONE, TODAY).rows.find((r) => r.id === "nyc-enforced");
+    assert.equal(row?.dateLabel, "Jul 5, 2023");
+  });
+  it("the law entry agrees with the event", () => {
+    const law = LAWS_BY_ID["nyc-ll144"];
+    assert.equal(law.effectiveDate, "2023-07-05");
+    assert.match(law.effective, /Enforced since July 5, 2023/);
+    assert.ok(law.sources.some((s) => s.url === DCWP));
+  });
+  it("no app text still says just July 2023", () => {
+    assert.doesNotMatch(JSON.stringify(LAWS), /July 2023/);
+    assert.doesNotMatch(JSON.stringify(LAW_EVENTS), /July 2023|"2023-07"/);
+  });
+});
+
+describe("Colorado enforcement stay", () => {
+  const co = LAWS_BY_ID["co-sb26-189"];
+
+  it("is the only paused law, and stays Coming soon", () => {
+    assert.deepEqual(co.tags, ["coming-soon", "enforcement-paused"]);
+    assert.equal(TAG_LABEL["enforcement-paused"], "Enforcement paused (court order)");
+    assert.deepEqual(LAWS.filter((l) => l.tags.includes("enforcement-paused")).map((l) => l.id), ["co-sb26-189"]);
+  });
+  it("has a stayed event saying the stay covers SB 26-189, from the new PRD text", () => {
+    const e = LAW_EVENTS.find((x) => x.id === "co-sb26-189-stay-covers");
+    assert.equal(e?.type, "stayed");
+    assert.equal(e?.lawId, "co-sb26-189");
+    assert.equal(e?.sourceKind, "PRD section 3");
+    assert.match(e?.description ?? "", /SB 26-189 is also paused/);
+    assert.match(e?.evidence ?? "", /stay's terms cover legislation replacing SB 24-205/);
+  });
+  it("the law's note is word for word from the PRD", () => {
+    const note = co.notes.find((n) => n.startsWith("Enforcement of SB 26-189"));
+    assert.ok(note);
+    const check = verifyQuote(note, normalizeForMatch(PRD_SECTION_3));
+    assert.ok(check.verified, check.reason);
+  });
+  it("keeps the effective date, the duties and the amber label, and adds the note", () => {
+    const match = matchLaw(LAW_RULES_BY_ID["co-sb26-189"], EXAMPLE);
+    assert.equal(LAW_RULES_BY_ID["co-sb26-189"].effectiveDate, "2027-01-01");
+    assert.ok(match.applies);
+    assert.ok(match.applicable.length > 0);
+    assert.ok(match.applicable.every((d) => d.effectiveDate === "2027-01-01"));
+    assert.equal(statusLabelFor([match], NONE, TODAY), "Action needed by Jan 1, 2027");
+    assert.equal(enforcementNote(co), "Enforcement currently paused by a court order");
+  });
+  it("no other law gets the note", () => {
+    for (const law of LAWS.filter((l) => l.id !== "co-sb26-189")) assert.equal(enforcementNote(law), null);
+  });
+  it("the filter hides Colorado only when both of its statuses are off", () => {
+    assert.equal(DEFAULT_FILTERS["enforcement-paused"], true);
+    assert.equal(lawPassesFilters(co, { ...DEFAULT_FILTERS, "coming-soon": false }), true);
+    assert.equal(lawPassesFilters(co, { ...DEFAULT_FILTERS, "enforcement-paused": false }), true);
+    assert.equal(lawPassesFilters(co, { ...DEFAULT_FILTERS, "coming-soon": false, "enforcement-paused": false }), false);
   });
 });
 

@@ -44,6 +44,16 @@ describe("listLawsView", () => {
   it("filters by status", () => {
     assert.deepEqual(listLawsView({ status: "challenged" }).laws.map((l) => l.id), ["ca-ab2013"]);
   });
+  it("shows Colorado's paused enforcement next to Coming soon, with the date unchanged", () => {
+    const { laws } = listLawsView({ status: "enforcement-paused" });
+    assert.deepEqual(laws.map((l) => l.id), ["co-sb26-189"]);
+    assert.deepEqual(laws[0].status, ["Coming soon", "Enforcement paused (court order)"]);
+    assert.equal(laws[0].effective_date, "2027-01-01");
+    assert.deepEqual(listLawsView({ status: "coming-soon" }).laws.map((l) => l.id), ["co-sb26-189", "ny-raise"]);
+  });
+  it("gives NYC's enforcement start from the DCWP page", () => {
+    assert.match(listLawsView({ state: "NYC" }).laws[0].effective, /Enforced since July 5, 2023 \(NYC DCWP\)/);
+  });
 });
 
 describe("ruleCardView", () => {
@@ -158,6 +168,13 @@ describe("checkProductView", () => {
     assert.equal(jur("CO")?.status, "Action needed by Jan 1, 2027");
     assert.equal(jur("NY")?.status, "Not applicable");
     assert.doesNotMatch(JSON.stringify(view.jurisdictions.map((j) => j.status)), /compliant/i);
+  });
+  it("adds the paused note to Colorado's amber label, and to no other law", () => {
+    const laws = view.jurisdictions.flatMap((j) => j.laws) as { law_id: string; status: string; status_note?: string }[];
+    const co = laws.find((l) => l.law_id === "co-sb26-189");
+    assert.equal(co?.status, "Action needed by Jan 1, 2027");
+    assert.equal(co?.status_note, "Enforcement currently paused by a court order");
+    assert.ok(laws.filter((l) => l.law_id !== "co-sb26-189").every((l) => l.status_note === undefined));
   });
   it("gives applicable duties with quotes, and labels PRD-only duties", () => {
     const nyc = jur("NYC")?.laws[0] as { applicable: { quote?: string }[] };

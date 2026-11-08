@@ -17,7 +17,7 @@ export type StateCode = string;
 /* ------------------------------------------------------------------ */
 
 /** A law can carry more than one tag, e.g. in force AND challenged. */
-export type LawStatusTag = "in-force" | "coming-soon" | "challenged";
+export type LawStatusTag = "in-force" | "coming-soon" | "challenged" | "enforcement-paused";
 
 export interface LawSource {
   label: string;

@@ -24,7 +24,7 @@ The examples below are based on real runs and shortened. AI output varies from r
 
 ### `list_laws`
 
-Input: `state?` (USPS code, or `NYC` for the city only; `NY` also lists NYC's law), `status?` (`in-force`, `coming-soon`, `challenged`).
+Input: `state?` (USPS code, or `NYC` for the city only; `NY` also lists NYC's law), `status?` (`in-force`, `coming-soon`, `challenged`, `enforcement-paused`).
 
 ```json
 { "state": "NY", "status": "coming-soon" }

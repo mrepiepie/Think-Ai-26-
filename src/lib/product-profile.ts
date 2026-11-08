@@ -99,7 +99,7 @@ export const ProductProfileDraft = z.object({
   role: z
     .enum(["developer", "deployer", "both", "unknown"])
     .describe(
-      "developer = builds or sells the AI product to others; deployer = uses AI in its own operations or decisions; both = does both; unknown = the description does not say.",
+      "developer = builds or sells the AI product to others; deployer = uses AI in its own operations or decisions; both = builds or develops the AI AND runs, operates or offers it to its own users, applicants or employees; unknown = the description does not say.",
     ),
   role_quote: quote,
   features: z

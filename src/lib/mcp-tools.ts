@@ -119,8 +119,8 @@ export function registerComplianceTools(server: McpServer) {
         .enum(JURISDICTION_CODES, { error: 'state must be a two-letter US code such as "TX", or "NYC".' })
         .optional(),
       status: z
-        .enum(["in-force", "coming-soon", "challenged"], {
-          error: 'status must be "in-force", "coming-soon" or "challenged".',
+        .enum(["in-force", "coming-soon", "challenged", "enforcement-paused"], {
+          error: 'status must be "in-force", "coming-soon", "challenged" or "enforcement-paused".',
         })
         .optional(),
     }),
