@@ -1,16 +1,16 @@
 "use client";
 
-import { ArrowUpRight, ChevronRight, CircleHelp, FilePenLine, MapPinned, Quote } from "lucide-react";
+import { ArrowUpRight, ChevronRight, CircleHelp, FilePenLine, MapPinned } from "lucide-react";
 import { useId, useState } from "react";
 import { Button, buttonVariants } from "@/components/ui/button";
-import { readTheLawLink, verifiedRules } from "@/data/law-library";
+import { readTheLawLink } from "@/data/law-library";
 import { jurisdictionName } from "@/data/states";
 import type { ComplianceStatus } from "@/data/types";
 import { enforcementNote, formatDay } from "@/lib/compliance";
-import { checkboxLabel, reviewedItems, type Duty, type JurisdictionRollup, type LawMatch } from "@/lib/matching";
+import { checkboxLabel, enforcementFacts, type Duty, type JurisdictionRollup, type LawMatch } from "@/lib/matching";
 import { noticeQuotes } from "@/lib/notice";
-import type { RuleItem } from "@/lib/rule-card";
 import { cn } from "@/lib/utils";
+import { FactList, QuoteToggle } from "../enforcement-facts";
 import { Eyebrow, Panel } from "../panel";
 import { LawTags, StatusPill } from "./status";
 
@@ -117,14 +117,11 @@ function LawCard({
   onDraft: (m: LawMatch) => void;
 }) {
   const { law } = match;
-  const rules = verifiedRules(law.id);
   const lawLink = readTheLawLink(law);
   const canDraft = noticeQuotes(match).length > 0;
   const done = match.applicable.filter((d) => checked.has(d.id)).length;
   const note = enforcementNote(law);
-  const penalties = reviewedItems(match.rule, "penalties") ?? rules?.penalties;
-  const enforcedBy = reviewedItems(match.rule, "enforcedBy") ?? rules?.enforcedBy;
-  const curePeriod = reviewedItems(match.rule, "curePeriod") ?? rules?.curePeriod;
+  const curePeriod = enforcementFacts(match.rule, "curePeriod");
 
   return (
     <li className="space-y-2.5 px-3 py-3">
@@ -212,13 +209,19 @@ function LawCard({
           {match.rule.effectiveDateFromPrd && " · From PRD summary"}
         </dd>
         <dt className="text-muted-foreground">Penalty</dt>
-        <FactCell items={penalties} fallback={law.penalty} />
+        <dd>
+          <FactList items={enforcementFacts(match.rule, "penalties")} />
+        </dd>
         <dt className="text-muted-foreground">Enforced by</dt>
-        <FactCell items={enforcedBy} fallback={law.enforcement.enforcer} />
-        {(curePeriod?.length || law.enforcement.curePeriod) && (
+        <dd>
+          <FactList items={enforcementFacts(match.rule, "enforcedBy")} />
+        </dd>
+        {curePeriod.length > 0 && (
           <>
             <dt className="text-muted-foreground">Cure period</dt>
-            <FactCell items={curePeriod} fallback={law.enforcement.curePeriod} />
+            <dd>
+              <FactList items={curePeriod} />
+            </dd>
           </>
         )}
       </dl>
@@ -338,54 +341,6 @@ function NotApplicableList({ duties }: { duties: Duty[] }) {
             </li>
           ))}
         </ul>
-      )}
-    </div>
-  );
-}
-
-/**
- * A fact row value: verified rule-card items (each with a quote toggle)
- * when there are any, else the PRD-verified fallback, else "Not verified".
- */
-function FactCell({ items, fallback }: { items: RuleItem[] | undefined; fallback: string | null }) {
-  if (items && items.length > 0) {
-    return (
-      <dd className="space-y-1">
-        {items.map((item) => (
-          <div key={item.text}>
-            {item.text}
-            {item.quote && <QuoteToggle quote={item.quote} />}
-          </div>
-        ))}
-      </dd>
-    );
-  }
-  return <dd className={cn(!fallback && "text-muted-foreground italic")}>{fallback ?? "Not verified"}</dd>;
-}
-
-/** Small toggle that reveals the exact supporting sentence(s) from the law. */
-function QuoteToggle({ quote, className }: { quote: string; className?: string }) {
-  const [open, setOpen] = useState(false);
-  const id = useId();
-  return (
-    <div className={className}>
-      <button
-        type="button"
-        onClick={() => setOpen((v) => !v)}
-        aria-expanded={open}
-        aria-controls={id}
-        className="inline-flex items-center gap-1 font-mono text-[9.5px] tracking-wider text-primary uppercase hover:underline focus-visible:underline focus-visible:outline-none"
-      >
-        <Quote className="size-2.5" aria-hidden />
-        {open ? "Hide quote" : "Quote"}
-      </button>
-      {open && (
-        <blockquote
-          id={id}
-          className="mt-1 border-l-2 border-primary/50 bg-muted/40 py-1 pr-1.5 pl-2 text-[11px] leading-relaxed text-muted-foreground"
-        >
-          “{quote}”
-        </blockquote>
       )}
     </div>
   );

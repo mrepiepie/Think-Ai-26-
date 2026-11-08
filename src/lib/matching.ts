@@ -142,6 +142,11 @@ interface ReviewedFact {
 export const NO_ENFORCER = "No enforcer named in the law text";
 export const NO_PENALTY = "No penalty stated in the law text";
 export const NO_CURE_PERIOD = "No cure period stated in the law text";
+/** Shown with every "not stated" line, so silence doesn't read as "no risk". */
+export const OTHER_LAWS_NOTE = "Other laws may still apply";
+
+export const isNotStated = (item: { text: string }) =>
+  item.text === NO_ENFORCER || item.text === NO_PENALTY || item.text === NO_CURE_PERIOD;
 
 const notStated = (text: string): ReviewedFact[] => [{ text, quote: null }];
 
@@ -662,6 +667,20 @@ export const LAW_RULES_BY_ID: Record<string, LawRule> = Object.fromEntries(LAW_R
  */
 export function reviewedItems(rule: LawRule, field: RuleField): RuleItem[] | undefined {
   return rule.reviewedFacts?.[field]?.map((f) => ({ text: f.text, quote: f.quote ?? "", verified: true, chunks: [] }));
+}
+
+/**
+ * The enforcement facts every screen shows for a law: reviewed facts, else
+ * verified rule-card items, else the PRD fact. Empty = nothing verified.
+ */
+export function enforcementFacts(rule: LawRule, field: "enforcedBy" | "penalties" | "curePeriod"): RuleItem[] {
+  const reviewed = reviewedItems(rule, field);
+  if (reviewed) return reviewed;
+  const card = ruleCard(rule.lawId)?.[field].filter((i) => i.verified) ?? [];
+  if (card.length > 0) return card;
+  const law = LAWS_BY_ID[rule.lawId];
+  const prd = field === "penalties" ? law.penalty : law.enforcement[field === "enforcedBy" ? "enforcer" : "curePeriod"];
+  return prd ? [{ text: prd, quote: "", verified: false, chunks: [] }] : [];
 }
 
 /** Resolve a "lawId/field/index" rule-card item id. */

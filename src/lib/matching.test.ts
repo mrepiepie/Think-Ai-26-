@@ -9,8 +9,11 @@ import {
   NO_CURE_PERIOD,
   NO_ENFORCER,
   NO_PENALTY,
+  OTHER_LAWS_NOTE,
   checkboxLabel,
   classifyAddressee,
+  enforcementFacts,
+  isNotStated,
   reviewedItems,
   statusLabelFor,
   matchCompany,
@@ -481,6 +484,35 @@ describe("reviewed enforcement facts", () => {
   });
   it("Illinois has no card, so it keeps its labelled PRD facts", () => {
     assert.equal(reviewedItems(LAW_RULES_BY_ID["il-hb3773"], "penalties"), undefined);
+  });
+  it("every screen gets the same facts from enforcementFacts", () => {
+    for (const lawId of AUDITED) {
+      for (const field of FIELDS) assert.deepEqual(enforcementFacts(LAW_RULES_BY_ID[lawId], field), facts(lawId, field));
+    }
+  });
+  it("Illinois is never called silent: its text isn't on file, so it is just not verified", () => {
+    const il = LAW_RULES_BY_ID["il-hb3773"];
+    for (const field of FIELDS) assert.deepEqual(enforcementFacts(il, field), []);
+  });
+  it('only "not stated" lines count as silence, for the "other laws" note', () => {
+    assert.equal(OTHER_LAWS_NOTE, "Other laws may still apply");
+    assert.equal(isNotStated({ text: NO_PENALTY }), true);
+    assert.equal(isNotStated({ text: NO_ENFORCER }), true);
+    assert.equal(isNotStated({ text: NO_CURE_PERIOD }), true);
+    for (const lawId of ["tx-traiga", "ny-raise"]) {
+      assert.ok(!facts(lawId, "penalties").some(isNotStated), lawId);
+    }
+  });
+  it("the cross-state table and checklist read the shared facts, not the PRD fields", () => {
+    for (const file of ["investigator/cross-state-table.tsx", "small-company/state-checklist.tsx"]) {
+      const src = readFileSync(path.join(process.cwd(), "src", "components", "dashboard", file), "utf8");
+      assert.match(src, /enforcementFacts\(/, file);
+      assert.doesNotMatch(src, /\.penalty\b|\.enforcement\b/, file);
+    }
+  });
+  it("the note is rendered by the shared list both screens use", () => {
+    const src = readFileSync(path.join(process.cwd(), "src", "components", "dashboard", "enforcement-facts.tsx"), "utf8");
+    assert.match(src, /isNotStated\(item\) && .*OTHER_LAWS_NOTE/);
   });
   it("SB 243: a civil action with all three remedies; the Office only receives and posts reports", () => {
     const items = reviewedItems(LAW_RULES_BY_ID["ca-sb243"], "enforcedBy")!;

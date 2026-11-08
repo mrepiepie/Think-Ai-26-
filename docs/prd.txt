@@ -15,6 +15,7 @@ CHANGE LOG
   criterion 4 annotated to match. No decisions changed.
 - 8 Nov 2026: added the Colorado enforcement stay covering SB 26-189
   and the official NYC DCWP enforcement date (July 5, 2023).
+- 8 Nov 2026: enforcement, penalty and cure facts corrected against official law text.
 
 ======================================================================
 1. ONE-LINE SUMMARY
@@ -97,7 +98,8 @@ EXAMPLE STATE LAWS
   must publish safety frameworks and report serious safety incidents;
   heaviest duties for developers with $500M+ revenue. Almost never
   applies to a small business.
-  [UNCHECKED] penalties up to $1M per violation.
+  Civil penalty of up to $1M per violation, for large frontier developers
+  only (Bus. & Prof. Code 22757.15).
   Source: https://www.vaquill.ai/blog/california-ai-laws-explained-sb-53-and-the-rest
 - California AB 2013 (in force Jan 1, 2026): generative AI developers
   must post a summary of their training data. xAI sued; a federal judge
@@ -110,8 +112,10 @@ EXAMPLE STATE LAWS
   Source: https://calawyers.org/privacy-law/regulatory-focus-on-ai-companion-character-chatbots/
 - Texas HB 149 / TRAIGA (in force Jan 1, 2026): bans certain harmful AI
   uses and requires disclosures. The Texas attorney general has
-  exclusive enforcement, must give a 60-day cure period, and there is
-  no private right to sue. Penalties $10k-$200k per violation plus
+  exclusive enforcement, except that a state agency may also sanction
+  a person it licenses (Sec. 552.101(a), 552.106). The AG must give a
+  60-day cure period, and there is no private right to sue. Penalties
+  $10k-$200k per violation plus
   daily amounts for continuing violations. The AG had to launch a
   public online complaint portal by Sept 1, 2026.
   Source: https://casrai.org/guides/texas-traiga-explained
@@ -121,7 +125,9 @@ EXAMPLE STATE LAWS
   and replaced by SB 26-189, signed May 14, 2026. SB 26-189 is a
   narrower disclosure law for automated decisions in areas like jobs,
   loans, housing and insurance, effective Jan 1, 2027, enforced by the
-  attorney general only, with a 60-day cure period. AG rulemaking
+  attorney general only. The 60-day cure applies only if the AG deems a
+  cure possible, is not required for knowing or repeated violations,
+  and is repealed Jan 1, 2030 (C.R.S. 6-1-1706(3)). AG rulemaking
   hearing held Oct 26, 2026; final rules due by Jan 1, 2027.
   Sources: https://securityboulevard.com/2026/11/us-state-ai-laws-in-force-what-an-enterprise-deployer-actually-owes/
            https://stackcyber.com/posts/ai-colorado-laws
@@ -137,8 +143,11 @@ EXAMPLE STATE LAWS
            https://hooglaw.com/ai-compliance/
 - New York City Local Law 144 (enforced since July 2023): annual
   independent bias audit of AI hiring tools, public audit summary, and
-  candidate notice; up to $1,500 per violation per day. The employer is
-  responsible even if it bought the tool from a vendor. A December 2025
+  candidate notice. Civil penalty of up to $500 for a first violation
+  and others that day, then $500-$1,500 for each later violation; each
+  day of use and each missed notice is a separate violation (Admin.
+  Code 20-872). The employer is responsible even if it bought the tool
+  from a vendor. A December 2025
   New York State Comptroller audit found the city's complaint-driven
   enforcement was weak (only two AEDT complaints received in the audit
   period).

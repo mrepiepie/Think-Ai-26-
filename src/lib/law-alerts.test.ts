@@ -89,6 +89,32 @@ describe("law events: every one has a real source", () => {
   });
 });
 
+describe("PRD section 3 matches the official text on enforcement facts", () => {
+  const flat = PRD_SECTION_3.replace(/\s+/g, " ");
+
+  it("has the change log line", () => {
+    assert.ok(PRD.includes("- 8 Nov 2026: enforcement, penalty and cure facts corrected against official law text."));
+  });
+  it("no longer has the four old claims", () => {
+    assert.doesNotMatch(flat, /up to \$1,500 per violation per day/);
+    assert.doesNotMatch(flat, /\[UNCHECKED\] penalties/);
+    assert.doesNotMatch(flat, /exclusive enforcement, must give/);
+    assert.doesNotMatch(flat, /attorney general only, with a 60-day cure period/);
+  });
+  it("cites the section for each correction", () => {
+    assert.match(flat, /each missed notice is a separate violation \(Admin\. Code 20-872\)/);
+    assert.match(flat, /a person it licenses \(Sec\. 552\.101\(a\), 552\.106\)/);
+    assert.match(flat, /repealed Jan 1, 2030 \(C\.R\.S\. 6-1-1706\(3\)\)/);
+    assert.match(flat, /large frontier developers only \(Bus\. & Prof\. Code 22757\.15\)/);
+  });
+  it("the sections cited exist in the law text", () => {
+    assert.match(read("data", "laws", "nyc-ll144.txt"), /§ 20-872 Penalties/);
+    assert.match(read("data", "laws", "tx-traiga.txt"), /Sec\. 552\.106\. ENFORCEMENT ACTIONS BY STATE AGENCIES/);
+    assert.match(read("data", "laws", "co-sb26-189.txt"), /6-1-1706\. Enforcement by the attorney general/);
+    assert.match(read("data", "laws", "ca-sb53.txt"), /22757\.15\./);
+  });
+});
+
 describe("NYC enforcement date", () => {
   const DCWP = "https://www.nyc.gov/site/dca/about/automated-employment-decision-tools.page";
 

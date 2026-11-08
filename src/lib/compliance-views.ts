@@ -7,6 +7,7 @@ import { confirmQuestions, fromDraft } from "./confirm-questions";
 import {
   LAW_RULES,
   LAW_RULES_BY_ID,
+  OTHER_LAWS_NOTE,
   matchCompany,
   profileKeys,
   reviewedItems,
@@ -123,7 +124,7 @@ export function ruleCardView(lawId: string) {
             text: item.text,
             ...(who ? { who } : {}),
             ...(timing ? { timing } : {}),
-            ...(item.quote ? { quote: item.quote, official_url: card.sourceUrl } : {}),
+            ...(item.quote ? { quote: item.quote, official_url: card.sourceUrl } : { note: OTHER_LAWS_NOTE }),
           },
         ];
       });

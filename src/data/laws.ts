@@ -28,7 +28,7 @@ export const LAWS: Law[] = [
       "Publish a summary of the audit",
       "Give candidates notice that the tool is used",
     ],
-    penalty: "Up to $1,500 per violation per day",
+    penalty: "Up to $500 for a first violation and others that day, then $500 to $1,500 for each later violation; each day of use and each missed notice is a separate violation",
     enforcement: {
       enforcer: "New York City (complaint-driven)",
       curePeriod: null,
@@ -103,7 +103,7 @@ export const LAWS: Law[] = [
     penalty:
       "$10k–$200k per violation, plus daily amounts for continuing violations",
     enforcement: {
-      enforcer: "Texas Attorney General (exclusive)",
+      enforcer: "Texas Attorney General (exclusive, except state agency sanctions under Sec. 552.106)",
       curePeriod: "60 days",
       privateRightToSue: "No",
     },
@@ -136,7 +136,7 @@ export const LAWS: Law[] = [
     penalty: null,
     enforcement: {
       enforcer: "Colorado Attorney General only",
-      curePeriod: "60 days",
+      curePeriod: "60 days, only if the AG deems a cure possible; not required for knowing or repeated violations; repealed Jan 1, 2030",
       privateRightToSue: null,
     },
     notes: [
@@ -235,8 +235,7 @@ export const LAWS: Law[] = [
       "Publish a safety framework",
       "Report serious safety incidents (within 15 days)",
     ],
-    // PRD marks the penalty figure [UNCHECKED], so it is not shown.
-    penalty: null,
+    penalty: "Up to $1M per violation, for large frontier developers only",
     enforcement: { enforcer: null, curePeriod: null, privateRightToSue: null },
     notes: ["Does not apply to small companies in practice."],
     smallCompanyRelevance: "rarely",
