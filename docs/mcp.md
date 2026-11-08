@@ -113,7 +113,7 @@ Input: `query` (2 to 200 characters), `law_id?`, `limit?` (1 to 50, default 10).
 
 ### `analyze_product` (AI)
 
-Input: `description` (20 to 4,000 characters). Returns a draft profile. Each quote is checked against the description: `found`, `not_found` or `no_quote`. A human should confirm the draft before using it.
+Input: `description` (20 to 4,000 characters). Returns a draft profile. Each quote is checked against the description: `found`, `not_found` or `no_quote`. `confirm_questions` comes from code, not AI; `draft_profile.notes` is the AI's own text and may be wrong. A human should confirm the draft before using it.
 
 ```json
 { "description": "Parrotfish Hiring Co. (14 staff) makes ShortlistBot, an AI resume screener that ranks job applicants ..." }
@@ -134,6 +134,7 @@ Input: `description` (20 to 4,000 characters). Returns a draft profile. Each quo
     "notes": []
   },
   "unknown_fields": [],
+  "confirm_questions": ["We couldn't find the quote for your role in your text: \"Parrotfish Hiring Co. (14 staff) makes ShortlistBot, ...\". Check it."],
   "human_review": "This is an AI draft. A human should confirm every field and resolve anything unknown, then pass the confirmed profile to check_product."
 }
 ```

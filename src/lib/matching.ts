@@ -130,6 +130,12 @@ interface DutyOverride {
   note: string;
 }
 
+/** A hand-reviewed fact. Its quote is checked against the law text by a test. */
+interface ReviewedFact {
+  text: string;
+  quote: string;
+}
+
 interface PrdDuty {
   /** Index into laws.ts obligations (PRD facts). */
   index: number;
@@ -158,6 +164,8 @@ export interface LawRule {
   dutyOverrides?: Record<number, DutyOverride>;
   /** Duties from PRD facts, for laws with no rule card. */
   prdDuties?: PrdDuty[];
+  /** Replaces the card's enforcedBy items when the extraction got them wrong. */
+  enforcedByOverride?: ReviewedFact[];
 }
 
 const EMPLOYMENT: FeatureId[] = ["resume_screening", "automated_employment_decision"];
@@ -302,6 +310,20 @@ export const LAW_RULES: LawRule[] = [
     effectiveDate: "2026-01-01",
     basis: ["ca-sb243/coveredParties/0", "ca-sb243/triggers/0", "ca-sb243/effectiveDate/0"],
     extracted: true,
+    // The card says the Office "enforces reporting", but § 22603 only has it receive and post
+    // reports. § 22605 is the only enforcement route the text names, and the card missed it.
+    enforcedByOverride: [
+      {
+        text: "A person who suffers injury in fact from a violation can bring a civil action for injunctive relief, damages (the greater of actual damages or $1,000 per violation), and reasonable attorney's fees and costs.",
+        quote:
+          "A person who suffers injury in fact as a result of a violation of this chapter may bring a civil action to recover all of the following relief: (a) Injunctive relief. (b) Damages in an amount equal to the greater of actual damages or one thousand dollars ($1,000) per violation. (c) Reasonable attorney’s fees and costs.",
+      },
+      {
+        text: "Annual reports go to the Office of Suicide Prevention, which posts the data. This law doesn't name it as an enforcer.",
+        quote:
+          "“Office” means the Office of Suicide Prevention established pursuant to Section 131300 of the Health and Safety Code. ... Beginning July 1, 2027, an operator shall annually report to the office all of the following ... The office shall post data from a report required by this section on its internet website.",
+      },
+    ],
     dutyOverrides: {
       3: {
         requiresFeature: { feature: "chatbot_used_by_minors", reason: "Applies to users the operator knows are minors" },
@@ -405,6 +427,11 @@ export const LAW_RULES: LawRule[] = [
 ];
 
 export const LAW_RULES_BY_ID: Record<string, LawRule> = Object.fromEntries(LAW_RULES.map((r) => [r.lawId, r]));
+
+/** A law's reviewed enforcement items, shaped like rule-card items. Undefined = use the card's. */
+export function reviewedEnforcedBy(rule: LawRule): RuleItem[] | undefined {
+  return rule.enforcedByOverride?.map((f) => ({ ...f, verified: true, chunks: [] }));
+}
 
 /** Resolve a "lawId/field/index" rule-card item id. */
 export function ruleCardItem(id: string): RuleItem | undefined {

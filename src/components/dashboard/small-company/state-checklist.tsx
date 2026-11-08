@@ -7,7 +7,7 @@ import { readTheLawLink, verifiedRules } from "@/data/law-library";
 import { jurisdictionName } from "@/data/states";
 import type { ComplianceStatus } from "@/data/types";
 import { enforcementNote, formatDay } from "@/lib/compliance";
-import { checkboxLabel, type Duty, type JurisdictionRollup, type LawMatch } from "@/lib/matching";
+import { checkboxLabel, reviewedEnforcedBy, type Duty, type JurisdictionRollup, type LawMatch } from "@/lib/matching";
 import { noticeQuotes } from "@/lib/notice";
 import type { RuleItem } from "@/lib/rule-card";
 import { cn } from "@/lib/utils";
@@ -211,7 +211,7 @@ function LawCard({
         <dt className="text-muted-foreground">Penalty</dt>
         <FactCell items={rules?.penalties} fallback={law.penalty} />
         <dt className="text-muted-foreground">Enforced by</dt>
-        <FactCell items={rules?.enforcedBy} fallback={law.enforcement.enforcer} />
+        <FactCell items={reviewedEnforcedBy(match.rule) ?? rules?.enforcedBy} fallback={law.enforcement.enforcer} />
         {(rules?.curePeriod.length || law.enforcement.curePeriod) && (
           <>
             <dt className="text-muted-foreground">Cure period</dt>

@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import { SAMPLE_COMPANY } from "@/data/company";
 import { LAW_EVENTS } from "@/data/law-events";
 import { DEFAULT_FILTERS, lawPassesFilters, type LawFilters } from "@/lib/compliance";
+import { fromDraft, toConfirmed, type EditableProfile } from "@/lib/confirm-questions";
 import { buildAlerts, buildDeadlines } from "@/lib/law-alerts";
 import { isoDay, matchCompany, rollupByJurisdiction } from "@/lib/matching";
 import type { ConfirmedProfile, ProductProfileDraft } from "@/lib/product-profile";
@@ -13,7 +14,6 @@ import { ComplianceMapPanel } from "./compliance-map-panel";
 import { DeadlinesList } from "./deadlines-list";
 import { useNoticeDrafter } from "./notice-drafter";
 import { ProductPanel, type ReaderState } from "./product-panel";
-import { fromDraft, toConfirmed, type EditableProfile } from "./profile-editor";
 import { StateChecklist } from "./state-checklist";
 
 const SEVERITY = { "non-compliant": 3, "action-soon": 2, compliant: 1, "not-applicable": 0 } as const;

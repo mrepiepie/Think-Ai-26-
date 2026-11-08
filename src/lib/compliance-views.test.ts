@@ -79,6 +79,23 @@ describe("ruleCardView", () => {
   });
 });
 
+describe("SB 243 enforcement in the MCP views", () => {
+  it("get_rule_card shows the reviewed items instead of the extracted one", () => {
+    const view = ruleCardView("ca-sb243") as unknown as { enforcedBy: { id: string; text: string }[] };
+    assert.deepEqual(view.enforcedBy.map((i) => i.id), ["ca-sb243/enforcedBy/reviewed-0", "ca-sb243/enforcedBy/reviewed-1"]);
+    assert.ok(!view.enforcedBy.some((i) => /enforces reporting/.test(i.text)));
+  });
+  it("search_laws finds the civil action and never the old line", () => {
+    const { matches } = searchLaws({ query: "civil action", lawId: "ca-sb243" });
+    assert.ok(matches.some((m) => m.id === "ca-sb243/enforcedBy/reviewed-0"));
+    assert.equal(searchLaws({ query: "enforces reporting", lawId: "ca-sb243" }).total_matches, 0);
+  });
+  it("other laws keep their rule-card ids", () => {
+    const view = ruleCardView("tx-traiga") as unknown as { enforcedBy: { id: string }[] };
+    assert.ok(view.enforcedBy.every((i) => /^tx-traiga\/enforcedBy\/\d+$/.test(i.id)));
+  });
+});
+
 describe("searchLaws", () => {
   it("finds verified duties by keyword, across laws", () => {
     const { matches } = searchLaws({ query: "critical safety incident report" });
@@ -96,6 +113,8 @@ describe("searchLaws", () => {
     const { matches } = searchLaws({ query: "safety", limit: 50 });
     for (const m of matches) {
       const [lawId, field, index] = m.id.split("/");
+      // Reviewed items aren't in the card; matching.test.ts checks their quotes against the law text.
+      if (index.startsWith("reviewed-")) continue;
       const items = ruleCard(lawId)?.[field as "obligations"];
       assert.equal(items?.[Number(index)].verified, true, m.id);
     }

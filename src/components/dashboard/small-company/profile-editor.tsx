@@ -5,86 +5,16 @@ import type { ReactNode } from "react";
 import { Input } from "@/components/ui/input";
 import { jurisdictionName } from "@/data/states";
 import {
-  COMPANY_NAME_MAX,
-  FEATURES,
-  JURISDICTION_CODES,
-  ROLES,
-  ROLE_LABEL,
-  checkQuote,
-  cleanCompanyName,
-  readCompanyName,
-  type ConfirmedProfile,
-  type FeatureId,
-  type ProductProfileDraft,
-  type Role,
-} from "@/lib/product-profile";
+  GENERATIVE_QUESTION_ID,
+  answerGenerative,
+  confirmQuestions,
+  type EditableProfile,
+} from "@/lib/confirm-questions";
+import { COMPANY_NAME_MAX, FEATURES, JURISDICTION_CODES, ROLES, ROLE_LABEL } from "@/lib/product-profile";
 import { cn } from "@/lib/utils";
 import { Eyebrow } from "../panel";
 
-/** The profile while the user reviews it. null = still unknown. */
-export interface EditableProfile {
-  /** "" = not stated. Used only in drafts. */
-  companyName: string;
-  companyNameQuote: string;
-  /** The reader offered a name that isn't in the user's text. */
-  companyNameRejected: boolean;
-  role: Role | null;
-  roleQuote: string;
-  features: Record<FeatureId, { on: boolean; unknown: boolean; quote: string; quoteFound: boolean }>;
-  jurisdictions: { code: string; on: boolean; unknown: boolean; quote: string; quoteFound: boolean }[];
-  isGovernment: boolean | null;
-  notes: string[];
-}
-
-export function fromDraft(draft: ProductProfileDraft, description: string): EditableProfile {
-  const features = Object.fromEntries(
-    FEATURES.map((f) => [f.id, { on: false, unknown: false, quote: "", quoteFound: false }]),
-  ) as EditableProfile["features"];
-  for (const f of draft.features) {
-    features[f.id] = {
-      on: f.status === "yes",
-      unknown: f.status === "unknown",
-      quote: f.quote,
-      quoteFound: checkQuote(f.quote, description),
-    };
-  }
-  const seen = new Set<string>();
-  const jurisdictions = draft.jurisdictions
-    .filter((j) => !seen.has(j.code) && seen.add(j.code))
-    .map((j) => ({
-      code: j.code,
-      on: j.status === "yes",
-      unknown: j.status === "unknown",
-      quote: j.quote,
-      quoteFound: checkQuote(j.quote, description),
-    }));
-  const company = readCompanyName(draft, description);
-  return {
-    companyName: company.name ?? "",
-    companyNameQuote: company.quote,
-    companyNameRejected: company.rejected,
-    role: draft.role === "unknown" ? null : draft.role,
-    roleQuote: draft.role_quote,
-    features,
-    jurisdictions,
-    isGovernment: draft.is_government === "unknown" ? null : draft.is_government === "yes",
-    notes: draft.notes.slice(0, 5),
-  };
-}
-
-/** null while role or government status is still unresolved. */
-export function toConfirmed(p: EditableProfile): ConfirmedProfile | null {
-  if (!p.role || p.isGovernment === null) return null;
-  return {
-    companyName: cleanCompanyName(p.companyName),
-    role: p.role,
-    features: FEATURES.map((f) => f.id).filter((id) => p.features[id].on),
-    jurisdictions: p.jurisdictions.filter((j) => j.on).map((j) => j.code),
-    isGovernment: p.isGovernment,
-  };
-}
-
-/** "We assumed / please confirm" list with toggle chips. */
+/** Code-generated "please confirm" questions, plus toggle chips for the profile. */
 export function ProfileEditor({
   profile,
   onChange,
@@ -92,41 +22,48 @@ export function ProfileEditor({
   profile: EditableProfile;
   onChange: (p: EditableProfile) => void;
 }) {
-  const unknownFeatures = FEATURES.filter((f) => profile.features[f.id].unknown);
-  const unknownPlaces = profile.jurisdictions.filter((j) => j.unknown);
-  const unfoundQuotes =
-    FEATURES.filter((f) => profile.features[f.id].on && profile.features[f.id].quote && !profile.features[f.id].quoteFound)
-      .length + profile.jurisdictions.filter((j) => j.on && j.quote && !j.quoteFound).length;
   const available = JURISDICTION_CODES.filter((c) => !profile.jurisdictions.some((j) => j.code === c));
-
-  const confirmItems: string[] = [
-    ...(profile.companyNameRejected && !profile.companyName
-      ? ["We couldn't confirm a company name from your text. Add it below if you want it in drafts."]
-      : []),
-    ...(profile.role ? [] : ["Pick your role below: we couldn't tell from the description."]),
-    ...(profile.isGovernment === null ? ["Are you a government agency? Pick yes or no below."] : []),
-    ...unknownFeatures.map((f) => `Not sure about "${f.label}". Turn it on if it applies.`),
-    ...unknownPlaces.map((j) => `Not sure you have users in ${jurisdictionName(j.code)}. Turn it on if you do.`),
-    ...(unfoundQuotes > 0
-      ? [`${unfoundQuotes} detected item${unfoundQuotes === 1 ? "" : "s"} had a quote not found in your text. Check them.`]
-      : []),
-    ...profile.notes,
-  ];
+  const questions = confirmQuestions(profile);
 
   return (
     <div className="space-y-3">
-      {confirmItems.length > 0 && (
+      {questions.length > 0 && (
         <div className="space-y-1 rounded-md border border-status-soon/40 bg-status-soon/5 p-2">
-          <Eyebrow className="text-status-soon">We assumed / please confirm</Eyebrow>
+          <Eyebrow className="text-status-soon">Please confirm</Eyebrow>
           <ul className="space-y-1 text-[11px] leading-snug">
-            {confirmItems.map((t) => (
-              <li key={t} className="flex gap-1.5">
+            {questions.map((q) => (
+              <li key={q.id} className="flex gap-1.5">
                 <CircleHelp className="mt-px size-3 shrink-0 text-status-soon" aria-hidden />
-                {t}
+                <div className="min-w-0 space-y-1">
+                  <div>{q.text}</div>
+                  {q.id === GENERATIVE_QUESTION_ID && (
+                    <div className="flex gap-1">
+                      <Chip on={profile.generativeAnswer === true} onClick={() => onChange(answerGenerative(profile, true))}>
+                        Yes
+                      </Chip>
+                      <Chip on={profile.generativeAnswer === false} onClick={() => onChange(answerGenerative(profile, false))}>
+                        No
+                      </Chip>
+                    </div>
+                  )}
+                </div>
               </li>
             ))}
           </ul>
         </div>
+      )}
+
+      {profile.notes.length > 0 && (
+        <details className="text-[11px] leading-snug text-muted-foreground">
+          <summary className="cursor-pointer font-mono text-[10px] tracking-wider uppercase hover:text-foreground">
+            AI&apos;s notes (may be wrong)
+          </summary>
+          <ul className="mt-1 space-y-1 border-l border-border pl-2">
+            {profile.notes.map((n) => (
+              <li key={n}>{n}</li>
+            ))}
+          </ul>
+        </details>
       )}
 
       <div className="space-y-1.5">
@@ -184,10 +121,11 @@ export function ProfileEditor({
                 unsure={st.unknown}
                 title={st.quote ? `From your text: "${st.quote}"${st.quoteFound ? "" : " (not found in your text)"}` : f.definition}
                 onClick={() =>
-                  onChange({
-                    ...profile,
-                    features: { ...profile.features, [f.id]: { ...st, on: !st.on, unknown: false } },
-                  })
+                  onChange(
+                    f.id === "generative_ai_public"
+                      ? answerGenerative(profile, !st.on)
+                      : { ...profile, features: { ...profile.features, [f.id]: { ...st, on: !st.on, unknown: false } } },
+                  )
                 }
               >
                 {f.label}

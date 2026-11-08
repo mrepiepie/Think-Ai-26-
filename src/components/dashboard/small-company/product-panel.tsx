@@ -8,11 +8,12 @@ import { LAWS } from "@/data/laws";
 import { jurisdictionName } from "@/data/states";
 import type { LawStatusTag } from "@/data/types";
 import { TAG_LABEL, lawPassesFilters, type LawFilters } from "@/lib/compliance";
+import type { EditableProfile } from "@/lib/confirm-questions";
 import type { JurisdictionRollup } from "@/lib/matching";
 import { DESCRIPTION_LIMITS, type ConfirmedProfile } from "@/lib/product-profile";
 import { cn } from "@/lib/utils";
 import { Eyebrow, Panel } from "../panel";
-import { ProfileEditor, type EditableProfile } from "./profile-editor";
+import { ProfileEditor } from "./profile-editor";
 import { StatusDot } from "./status";
 
 const TAGS: LawStatusTag[] = ["in-force", "coming-soon", "challenged", "enforcement-paused"];
@@ -134,7 +135,7 @@ export function ProductPanel({
             </Button>
             <p className="text-[10.5px] text-muted-foreground">
               {!canRun
-                ? "Resolve your role and government status first."
+                ? "Answer the open questions above first (role, government status, generative AI)."
                 : "Matching is plain code (no AI) against verified quotes from the law text."}
             </p>
           </div>

@@ -1,10 +1,14 @@
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
+import path from "node:path";
 import { describe, it } from "node:test";
 import { STATUS_LABEL } from "./compliance";
 import {
   LAW_RULES,
+  LAW_RULES_BY_ID,
   checkboxLabel,
   classifyAddressee,
+  reviewedEnforcedBy,
   statusLabelFor,
   matchCompany,
   rollupByJurisdiction,
@@ -13,6 +17,7 @@ import {
   type LawMatch,
 } from "./matching";
 import type { ConfirmedProfile } from "./product-profile";
+import { normalizeForMatch, verifyQuote } from "./quote-verify";
 
 const TODAY = "2026-11-07";
 const none = new Set<string>();
@@ -358,6 +363,43 @@ describe("status wording", () => {
     assert.equal(checkboxLabel("Publish a safety framework"), "Publish a safety framework");
     const tx = byId(matches, "tx-traiga");
     for (const d of tx.applicable) assert.match(checkboxLabel(d.text), /^Confirm you don't: /, d.id);
+  });
+});
+
+describe("reviewed enforcement facts", () => {
+  const lawText = (lawId: string) => readFileSync(path.join(process.cwd(), "data", "laws", `${lawId}.txt`), "utf8");
+
+  it("every override quote is in the official text", () => {
+    for (const rule of LAW_RULES) {
+      for (const fact of rule.enforcedByOverride ?? []) {
+        const check = verifyQuote(fact.quote, normalizeForMatch(lawText(rule.lawId)));
+        assert.ok(check.verified, `${rule.lawId}: ${check.reason}: ${fact.quote}`);
+      }
+    }
+  });
+  it("SB 243: a civil action with all three remedies; the Office only receives and posts reports", () => {
+    const items = reviewedEnforcedBy(LAW_RULES_BY_ID["ca-sb243"])!;
+    assert.equal(items.length, 2);
+    assert.match(items[0].text, /civil action/);
+    assert.match(items[0].text, /injunctive relief/);
+    assert.match(items[0].text, /\$1,000 per violation/);
+    assert.match(items[0].text, /attorney's fees/);
+    assert.match(items[0].quote, /may bring a civil action/);
+    assert.match(items[1].text, /Annual reports go to the Office of Suicide Prevention/);
+    assert.match(items[1].text, /doesn't name it as an enforcer/);
+    assert.ok(items.every((i) => i.verified));
+    assert.ok(!items.some((i) => /enforces reporting/.test(i.text)));
+  });
+  it("the text gives the Office no enforcement power and names no attorney general", () => {
+    const text = lawText("ca-sb243");
+    assert.doesNotMatch(text, /attorney general/i);
+    const officeLines = text.split(/\r?\n/).filter((l) => /\bthe office\b/i.test(l));
+    // The definition, the duty to report to it, and its duty to post the data.
+    assert.equal(officeLines.length, 3);
+    for (const line of officeLines) assert.doesNotMatch(line, /enforce|penalt|civil action/i);
+  });
+  it("other laws keep their rule-card items", () => {
+    assert.equal(reviewedEnforcedBy(LAW_RULES_BY_ID["tx-traiga"]), undefined);
   });
 });
 

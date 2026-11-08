@@ -3,11 +3,13 @@ import { LAWS, LAWS_BY_ID } from "@/data/laws";
 import { jurisdictionName } from "@/data/states";
 import type { LawStatusTag } from "@/data/types";
 import { enforcementNote, TAG_LABEL } from "./compliance";
+import { confirmQuestions, fromDraft } from "./confirm-questions";
 import {
   LAW_RULES,
   LAW_RULES_BY_ID,
   matchCompany,
   profileKeys,
+  reviewedEnforcedBy,
   rollupByJurisdiction,
   type Duty,
   type LawMatch,
@@ -20,7 +22,7 @@ import {
   type ConfirmedProfile,
   type ProductProfileDraft,
 } from "./product-profile";
-import { RULE_FIELDS, type RuleField, type RuleItem, type RuleObligation } from "./rule-card";
+import { RULE_FIELDS, type RuleCard, type RuleField, type RuleItem, type RuleObligation } from "./rule-card";
 
 /**
  * Read-only views of the law data and matching results, as returned by the
@@ -82,6 +84,13 @@ export function listLawsView(filter: { state?: string; status?: LawStatusTag }) 
 
 const asObligation = (item: RuleItem) => item as Partial<RuleObligation>;
 
+/** A card's items with their ids. Reviewed enforcement items replace the extracted ones. */
+function cardItems(card: RuleCard, lawId: string, field: RuleField): { id: string; item: RuleItem }[] {
+  const reviewed = field === "enforcedBy" ? reviewedEnforcedBy(LAW_RULES_BY_ID[lawId]) : undefined;
+  if (reviewed) return reviewed.map((item, i) => ({ id: `${lawId}/enforcedBy/reviewed-${i}`, item }));
+  return (card[field] as RuleItem[]).map((item, i) => ({ id: `${lawId}/${field}/${i}`, item }));
+}
+
 export function ruleCardView(lawId: string) {
   const law = LAWS_BY_ID[lawId];
   const card = ruleCard(lawId);
@@ -100,7 +109,7 @@ export function ruleCardView(lawId: string) {
   let hidden = 0;
   const sections = Object.fromEntries(
     RULE_FIELDS.map((field) => {
-      const items = (card[field] as RuleItem[]).flatMap((item, index) => {
+      const items = cardItems(card, lawId, field).flatMap(({ id, item }) => {
         if (!item.verified) {
           hidden++;
           return [];
@@ -109,7 +118,7 @@ export function ruleCardView(lawId: string) {
         const { who, timing } = asObligation(item);
         return [
           {
-            id: `${lawId}/${field}/${index}`,
+            id,
             text: item.text,
             ...(who ? { who } : {}),
             ...(timing ? { timing } : {}),
@@ -166,8 +175,7 @@ export function searchLaws(input: { query: string; lawId?: string; limit?: numbe
     const card = ruleCard(lawId);
     if (!card) continue;
     for (const field of SEARCH_ORDER) {
-      const items = card[field] as RuleItem[];
-      for (const [index, item] of items.entries()) {
+      for (const { id, item } of cardItems(card, lawId, field)) {
         if (!item.verified) continue;
         const haystack = words(`${item.text} ${item.quote} ${asObligation(item).who ?? ""}`);
         const hits = terms.map((t) => haystack.filter((w) => w.startsWith(t)).length);
@@ -178,7 +186,7 @@ export function searchLaws(input: { query: string; lawId?: string; limit?: numbe
         scored.push({
           score: hits.reduce((a, b) => a + b, 0),
           match: {
-            id: `${lawId}/${field}/${index}`,
+            id,
             law_id: lawId,
             law: LAWS_BY_ID[lawId].name,
             type: field,
@@ -240,6 +248,7 @@ export function analyzeProductView(draft: ProductProfileDraft, description: stri
       notes: draft.notes,
     },
     unknown_fields: unknown,
+    confirm_questions: confirmQuestions(fromDraft(draft, description)).map((q) => q.text),
     human_review:
       "This is an AI draft. A human should confirm every field and resolve anything unknown, then pass the confirmed profile to check_product.",
   };

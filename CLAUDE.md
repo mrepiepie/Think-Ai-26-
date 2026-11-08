@@ -30,6 +30,7 @@ This Next.js version has breaking changes from older versions. See [AGENTS.md](A
 - Law reader script: `scripts/extract-laws.ts`; quote checking: `src/lib/quote-verify.ts`
 - Groq client and model config: `src/lib/groq.ts`
 - Product reader: `src/lib/product-profile.ts`, `src/lib/product-reader.ts` and `src/app/api/product-reader/`
+- Confirm step (questions from code, not AI): `src/lib/confirm-questions.ts`
 - Matching engine (plain code, no AI) and its reviewed law table: `src/lib/matching.ts`, tests in `src/lib/matching.test.ts`
 - Law events (reviewed, sourced) and computed alerts/deadlines: `src/data/law-events.ts`, `src/lib/law-alerts.ts`, tests in `src/lib/law-alerts.test.ts`
 - Notice drafter: `src/lib/notice.ts`, `src/lib/notice-draft.ts` and `src/app/api/draft-notice/`
