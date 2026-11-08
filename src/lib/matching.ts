@@ -382,8 +382,9 @@ export const LAW_RULES: LawRule[] = [
     coveredRoles: ["developer"],
     covers: "Frontier developers only",
     effectiveDate: "2027-01-01",
-    // effectiveDate/0 is unverified; effectiveDate/1 only points to another chapter's date.
-    effectiveDateFromPrd: true,
+    // Date: ch. 96 § 3 of the official text, verified as the ny-raise-effective event in
+    // law-events.ts. Not from the card: effectiveDate/0 is unverified, effectiveDate/1 only
+    // points to another chapter's date.
     basis: ["ny-raise/coveredParties/1", "ny-raise/coveredParties/5", "ny-raise/triggers/0", "ny-raise/triggers/5"],
     extracted: true,
     dutyOverrides: {

@@ -1,11 +1,23 @@
 "use client";
 
 import { Radar } from "lucide-react";
+import { lawsVerified } from "@/data/law-library";
 import type { Persona } from "@/data/types";
 import { useNow } from "@/lib/use-now";
 import { PersonaSwitcher } from "./persona-switcher";
 
-function LiveClock() {
+const VERIFIED = lawsVerified();
+const VERIFIED_DATE = new Intl.DateTimeFormat("en-GB", {
+  day: "numeric",
+  month: "short",
+  year: "numeric",
+  timeZone: "UTC",
+}).format(new Date(`${VERIFIED.date}T00:00:00Z`));
+const VERIFIED_DETAIL =
+  `Official text fetched for ${VERIFIED.fetched} of ${VERIFIED.total} tracked laws.` +
+  (VERIFIED.notFetched.length ? ` Not fetched (PRD section 3 only): ${VERIFIED.notFetched.join(", ")}.` : "");
+
+function Clock() {
   const now = useNow();
   const d = now === null ? null : new Date(now);
   const date = d
@@ -25,12 +37,8 @@ function LiveClock() {
     : "--:--:--";
   return (
     <div className="flex items-center gap-3 font-mono text-[11px] tracking-wider text-muted-foreground tabular-nums">
-      <span className="flex items-center gap-1.5 font-semibold text-live">
-        <span className="relative flex size-2">
-          <span className="absolute inline-flex size-full animate-ping rounded-full bg-live opacity-70 motion-reduce:animate-none" />
-          <span className="relative inline-flex size-2 rounded-full bg-live" />
-        </span>
-        LIVE
+      <span className="font-semibold text-foreground" title={VERIFIED_DETAIL}>
+        Laws verified {VERIFIED_DATE}
       </span>
       <time dateTime={d?.toISOString()} suppressHydrationWarning>
         {date} <span className="hidden sm:inline">· {time} UTC</span>
@@ -54,7 +62,7 @@ export function TopBar({
           State AI Law Compliance Mapper
         </h1>
       </div>
-      <LiveClock />
+      <Clock />
       <div className="ml-auto">
         <PersonaSwitcher value={persona} onChange={onPersonaChange} />
       </div>

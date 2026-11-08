@@ -1,9 +1,10 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { LAW_CHANGE_ALERTS, UPCOMING_DEADLINES } from "@/data/alerts";
 import { SAMPLE_COMPANY } from "@/data/company";
+import { LAW_EVENTS } from "@/data/law-events";
 import { DEFAULT_FILTERS, lawPassesFilters, type LawFilters } from "@/lib/compliance";
+import { buildAlerts, buildDeadlines } from "@/lib/law-alerts";
 import { isoDay, matchCompany, rollupByJurisdiction } from "@/lib/matching";
 import type { ConfirmedProfile, ProductProfileDraft } from "@/lib/product-profile";
 import { useNow } from "@/lib/use-now";
@@ -16,6 +17,11 @@ import { fromDraft, toConfirmed, type EditableProfile } from "./profile-editor";
 import { StateChecklist } from "./state-checklist";
 
 const SEVERITY = { "non-compliant": 3, "action-soon": 2, compliant: 1, "not-applicable": 0 } as const;
+
+/** The company name doesn't affect matching, so editing it must not force a re-match. */
+function matchingKey(profile: ConfirmedProfile | null) {
+  return JSON.stringify(profile && { ...profile, companyName: undefined });
+}
 
 /**
  * Persona 1: small company.
@@ -31,11 +37,11 @@ export function SmallCompanyScreen() {
   const [checked, setChecked] = useState<Set<string>>(() => new Set());
   const [filters, setFilters] = useState<LawFilters>(DEFAULT_FILTERS);
   const [selected, setSelected] = useState<string | null>(null);
-  const drafter = useNoticeDrafter(confirmed);
 
   const nowMs = useNow();
   // Matching only runs after a click, by which time the clock is available.
   const today = nowMs ? isoDay(nowMs) : "1970-01-01";
+  const clockDay = nowMs ? today : null;
 
   const matches = useMemo(() => (confirmed ? matchCompany(confirmed) : []), [confirmed]);
   const rollup = useMemo(
@@ -46,8 +52,24 @@ export function SmallCompanyScreen() {
     [matches, confirmed, checked, today, filters],
   );
 
+  const alerts = useMemo(
+    () => buildAlerts(LAW_EVENTS, confirmed ? matches : null, checked, clockDay),
+    [confirmed, matches, checked, clockDay],
+  );
+  const deadlines = useMemo(
+    () => (clockDay ? buildDeadlines(LAW_EVENTS, confirmed ? matches : null, checked, clockDay) : null),
+    [confirmed, matches, checked, clockDay],
+  );
+
   const pending = profile ? toConfirmed(profile) : null;
-  const stale = !!confirmed && JSON.stringify(pending) !== JSON.stringify(confirmed);
+  const stale = !!confirmed && matchingKey(pending) !== matchingKey(confirmed);
+  // Drafts use the latest confirmed-step name, even if edited after matching.
+  const latestName = pending?.companyName ?? null;
+  const draftProfile = useMemo(
+    () => (confirmed ? { ...confirmed, companyName: latestName } : null),
+    [confirmed, latestName],
+  );
+  const drafter = useNoticeDrafter(draftProfile, isExample);
 
   async function analyze() {
     setReader({ status: "loading" });
@@ -142,8 +164,12 @@ export function SmallCompanyScreen() {
         className="max-h-[70vh] lg:col-start-3 lg:row-start-1 lg:max-h-none"
       />
       <div className="grid gap-2 md:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)] lg:col-span-3 lg:row-start-2 lg:min-h-0">
-        <AlertsFeed alerts={LAW_CHANGE_ALERTS} onSelectState={setSelected} className="max-h-72 lg:max-h-none" />
-        <DeadlinesList deadlines={UPCOMING_DEADLINES} className="max-h-72 lg:max-h-none" />
+        <AlertsFeed
+          view={alerts}
+          onSelectJurisdiction={confirmed ? setSelected : undefined}
+          className="max-h-72 lg:max-h-none"
+        />
+        <DeadlinesList rows={deadlines} matched={!!confirmed} className="max-h-72 lg:max-h-none" />
       </div>
       {drafter.dialog}
     </div>

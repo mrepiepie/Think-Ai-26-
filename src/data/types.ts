@@ -1,9 +1,10 @@
 /**
  * Shared types for all dashboard data.
  *
- * Everything under src/data/ is static sample data today. Swap these files
- * (or replace them with fetchers returning the same shapes) to plug in real
- * data without touching the components.
+ * Which files under src/data/ are real and which are sample data is stated at
+ * the top of each file. Swap the sample files (or replace them with fetchers
+ * returning the same shapes) to plug in real data without touching the
+ * components.
  */
 
 export type Persona = "company" | "citizen" | "investigator";
@@ -69,36 +70,6 @@ export interface CompanyProfile {
   productName: string;
   productDescription: string;
   employees: number;
-}
-
-export interface LawChangeAlert {
-  id: string;
-  /** Display date as precise as the PRD gives it. */
-  dateLabel: string;
-  /** Sort key (ISO, approximate when the PRD only gives a month). */
-  sortDate: string;
-  state: StateCode;
-  lawId: string | null;
-  kind: "signed" | "replaced" | "challenged" | "rulemaking" | "enforcement" | "delayed";
-  headline: string;
-  /** How this affects the sample company's product. */
-  impact: string;
-  affectsYou: boolean;
-}
-
-export interface Deadline {
-  id: string;
-  /** ISO date used for the countdown. */
-  date: string;
-  /** Display label when the PRD is less precise than a day. */
-  dateLabel?: string;
-  /** True when the source only gives a month: no day countdown is shown. */
-  approximate?: boolean;
-  title: string;
-  lawId: string | null;
-  affectsYou: boolean;
-  /** True for invented company-internal tasks (not a law fact). */
-  sample: boolean;
 }
 
 /* ------------------------------------------------------------------ */

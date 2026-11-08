@@ -6,8 +6,8 @@ import { DESCRIPTION_LIMITS, FEATURES, ProductProfileDraft } from "./product-pro
 
 /**
  * PRODUCT READER (AI). Turns a plain-language product description into a
- * draft profile (role, features from a fixed list, jurisdictions,
- * government flag). Unclear items come back as "unknown" for the user to
+ * draft profile (company name, role, features from a fixed list,
+ * jurisdictions, government flag). Unclear items come back as "unknown" for the user to
  * confirm; matching itself is done later in code (src/lib/matching.ts).
  * Used by /api/product-reader and the analyze_product MCP tool.
  */
@@ -23,6 +23,7 @@ const SYSTEM = `You read a company's plain-language description of its AI produc
 Rules:
 - Use ONLY what the description says. Never guess. If something is hinted at but unclear, use "unknown" (role, is_government) or status "unknown" (features, jurisdictions).
 - Every quote must be words copied exactly from the description (a short phrase is fine). Use "" if there is nothing to quote.
+- company_name: the company's own name, copied exactly as written in the description. Never use a product, customer or vendor name. Use null if the description doesn't state the company's name, and set company_name_quote to the words you copied ("" if none).
 - role: "developer" if the company builds or sells the AI to others; "deployer" if it uses AI in its own operations or decisions (e.g. on its own applicants, customers or users); "both" if the description says both; else "unknown".
 - features: pick only from this fixed list. Include a feature only if the description mentions or clearly hints at it:
 ${FEATURES.map((f) => `  - ${f.id}: ${f.definition}`).join("\n")}

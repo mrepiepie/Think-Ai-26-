@@ -76,13 +76,15 @@ describe("reviewed law table", () => {
   it("only Illinois has no rule card", () => {
     assert.deepEqual(LAW_RULES.filter((r) => !r.extracted).map((r) => r.lawId), ["il-hb3773"]);
   });
-  it("SB 53 and RAISE dates rest on the PRD, not a rule-card date item", () => {
-    for (const id of ["ca-sb53", "ny-raise"]) {
-      const rule = LAW_RULES.find((r) => r.lawId === id);
+  it("SB 53's date rests on the PRD; RAISE's on the official text, not a rule-card date item", () => {
+    const sb53 = LAW_RULES.find((r) => r.lawId === "ca-sb53");
+    assert.equal(sb53?.effectiveDateFromPrd, true);
+    const raise = LAW_RULES.find((r) => r.lawId === "ny-raise");
+    assert.equal(raise?.effectiveDateFromPrd, undefined);
+    for (const rule of [sb53, raise]) {
       assert.equal(rule?.extracted, true);
-      assert.equal(rule?.effectiveDateFromPrd, true);
-      assert.ok(rule?.basis.length, `${id} has no basis`);
-      assert.ok(!rule?.basis.some((b) => b.includes("/effectiveDate/")), `${id} uses a date item`);
+      assert.ok(rule?.basis.length, `${rule?.lawId} has no basis`);
+      assert.ok(!rule?.basis.some((b) => b.includes("/effectiveDate/")), `${rule?.lawId} uses a date item`);
     }
     assert.equal(ruleCardItem("ny-raise/effectiveDate/0")?.verified, false);
   });
@@ -244,10 +246,10 @@ describe("frontier model developer in California and New York", () => {
     ]);
   });
 
-  it("every RAISE duty starts Jan 1, 2027, labelled as a PRD date", () => {
+  it("every RAISE duty starts Jan 1, 2027, dated from the official text", () => {
     for (const d of [...raise.applicable, ...raise.needsReview, ...raise.notApplicable]) {
       assert.equal(d.effectiveDate, "2027-01-01", d.id);
-      assert.equal(d.dateFromPrd, true, d.id);
+      assert.equal(d.dateFromPrd, false, d.id);
     }
   });
 

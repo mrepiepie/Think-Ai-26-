@@ -89,6 +89,13 @@ const quote = z
 
 /** What the model returns. Strict-mode friendly: every field required. */
 export const ProductProfileDraft = z.object({
+  company_name: z
+    .string()
+    .nullable()
+    .describe(
+      "The company's own name, copied exactly from the description. Never a product, customer or vendor name. null if the description does not state it.",
+    ),
+  company_name_quote: quote,
   role: z
     .enum(["developer", "deployer", "both", "unknown"])
     .describe(
@@ -123,8 +130,19 @@ export const ProductProfileDraft = z.object({
 
 export type ProductProfileDraft = z.infer<typeof ProductProfileDraft>;
 
+export const COMPANY_NAME_MAX = 120;
+
 /** The profile after the user resolves every "unknown". Matching runs on this. */
 export const ConfirmedProfile = z.object({
+  /** Used only in drafts. No brackets or newlines, so a name can't forge a [Q1] citation. */
+  companyName: z
+    .string()
+    .trim()
+    .min(1)
+    .max(COMPANY_NAME_MAX)
+    .regex(/^[^[\]\r\n]+$/, "companyName must not contain brackets or line breaks.")
+    .nullable()
+    .optional(),
   role: z.enum(ROLES),
   features: z.array(z.enum(FEATURE_IDS)).max(FEATURE_IDS.length),
   jurisdictions: z.array(z.enum(JURISDICTION_CODES)).max(JURISDICTION_CODES.length),
@@ -140,4 +158,31 @@ export function checkQuote(quoteText: string, description: string): boolean {
   const q = normalizeForMatch(quoteText);
   if (!q) return false;
   return normalizeForMatch(description).includes(q);
+}
+
+/** Make a typed name fit ConfirmedProfile. Empty becomes null. */
+export function cleanCompanyName(name: string): string | null {
+  const cleaned = name
+    .replace(/[[\]\r\n]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim()
+    .slice(0, COMPANY_NAME_MAX)
+    .trim();
+  return cleaned || null;
+}
+
+/**
+ * The reader's company name, kept only if those words are in the user's text,
+ * so a name the model made up is never shown. `rejected` = it offered a name
+ * that isn't in the text.
+ */
+export function readCompanyName(
+  draft: Pick<ProductProfileDraft, "company_name" | "company_name_quote">,
+  description: string,
+): { name: string | null; quote: string; rejected: boolean } {
+  const offered = draft.company_name?.trim();
+  if (!offered) return { name: null, quote: "", rejected: false };
+  if (!checkQuote(offered, description)) return { name: null, quote: "", rejected: true };
+  const quote = checkQuote(draft.company_name_quote, description) ? draft.company_name_quote : offered;
+  return { name: cleanCompanyName(offered), quote, rejected: false };
 }

@@ -6,9 +6,10 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { jurisdictionName } from "@/data/states";
 import type { LawMatch } from "@/lib/matching";
-import { citedLabels, noticeQuotes } from "@/lib/notice";
+import { citedLabels, fillCompanyName, noticeQuotes } from "@/lib/notice";
 import type { ConfirmedProfile } from "@/lib/product-profile";
 import { Eyebrow } from "../panel";
+import { SampleBadge } from "../sample-badge";
 
 type Phase = "streaming" | "done" | "stopped" | "error";
 
@@ -17,7 +18,7 @@ type Phase = "streaming" | "done" | "stopped" | "error";
  * opens the dialog and starts streaming right away. Streaming starts from
  * the event handler, not an effect, so exactly one Groq request is sent.
  */
-export function useNoticeDrafter(profile: ConfirmedProfile | null) {
+export function useNoticeDrafter(profile: ConfirmedProfile | null, isExample: boolean) {
   const [match, setMatch] = useState<LawMatch | null>(null);
   const [text, setText] = useState("");
   const [phase, setPhase] = useState<Phase>("done");
@@ -85,7 +86,8 @@ export function useNoticeDrafter(profile: ConfirmedProfile | null) {
         {match && (
           <DrafterBody
             match={match}
-            text={text}
+            text={fillCompanyName(text, profile?.companyName)}
+            isExample={isExample}
             phase={phase}
             error={error}
             onStop={() => abortRef.current?.abort()}
@@ -103,6 +105,7 @@ export function useNoticeDrafter(profile: ConfirmedProfile | null) {
 function DrafterBody({
   match,
   text,
+  isExample,
   phase,
   error,
   onStop,
@@ -111,6 +114,7 @@ function DrafterBody({
 }: {
   match: LawMatch;
   text: string;
+  isExample: boolean;
   phase: Phase;
   error: string | null;
   onStop: () => void;
@@ -139,6 +143,7 @@ function DrafterBody({
           {jurisdictionName(match.rule.jurisdictionKey)}. Written by AI from {quotes.length} verified quote
           {quotes.length === 1 ? "" : "s"} of the law and your profile only. Not legal advice.
         </DialogDescription>
+        {isExample && <SampleBadge />}
       </DialogHeader>
 
       <div className="min-h-0 space-y-3 overflow-auto">

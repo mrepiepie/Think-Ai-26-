@@ -26,13 +26,14 @@ describe("withDisclaimer", () => {
 });
 
 describe("listLawsView", () => {
-  it("lists all 8 laws, with SB 53 and RAISE extracted and dated from the PRD", () => {
+  it("lists all 8 laws: RAISE dated from the official text, SB 53 from the PRD", () => {
     const { count, laws } = listLawsView({});
     assert.equal(count, 8);
     const raise = laws.find((l) => l.id === "ny-raise");
     assert.equal(raise?.extracted, true);
     assert.equal(raise?.effective_date, "2027-01-01");
-    assert.equal(raise?.effective_date_source, "From PRD summary");
+    assert.equal(raise?.effective_date_source, "Official law text");
+    assert.equal(laws.find((l) => l.id === "ca-sb53")?.effective_date_source, "From PRD summary");
     assert.equal(laws.find((l) => l.id === "tx-traiga")?.effective_date_source, "Official law text");
     assert.equal(laws.find((l) => l.id === "il-hb3773")?.extracted, false);
   });
@@ -101,9 +102,11 @@ describe("searchLaws", () => {
 });
 
 describe("analyzeProductView", () => {
-  const description = "We build a resume screener used in Texas.";
+  const description = "Acme Hiring LLC builds a resume screener used in Texas.";
   const view = analyzeProductView(
     {
+      company_name: "Acme Hiring LLC",
+      company_name_quote: "Acme Hiring LLC",
       role: "unknown",
       role_quote: "",
       features: [{ id: "resume_screening", status: "yes", quote: "resume screener" }],
@@ -120,6 +123,25 @@ describe("analyzeProductView", () => {
     assert.equal(view.draft_profile.features[0].quote_check, "found");
     assert.equal(view.draft_profile.jurisdictions[0].quote_check, "not_found");
     assert.equal(view.draft_profile.jurisdictions[1].quote_check, "no_quote");
+  });
+  it("returns the company name only when it is in the description", () => {
+    assert.equal(view.draft_profile.company_name.value, "Acme Hiring LLC");
+    assert.equal(view.draft_profile.company_name.quote_check, "found");
+    const invented = analyzeProductView(
+      {
+        company_name: "Globex Corp",
+        company_name_quote: "Globex Corp",
+        role: "developer",
+        role_quote: "",
+        features: [],
+        jurisdictions: [],
+        is_government: "no",
+        notes: [],
+      },
+      description,
+    );
+    assert.equal(invented.draft_profile.company_name.value, null);
+    assert.equal(invented.draft_profile.company_name.quote_check, "not_found");
   });
   it("lists unknowns and asks a human to confirm", () => {
     assert.deepEqual(view.unknown_fields, ["role", "jurisdiction:CO"]);

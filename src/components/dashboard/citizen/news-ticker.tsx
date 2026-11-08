@@ -1,7 +1,7 @@
 import type { Headline } from "@/data/types";
 import { SampleBadge } from "../sample-badge";
 
-/** Scrolling "LIVE" ticker of placeholder headlines. Pauses on hover. */
+/** Scrolling ticker of placeholder headlines. Pauses on hover. */
 export function NewsTicker({
   headlines,
   className,
@@ -29,7 +29,7 @@ export function NewsTicker({
           <span className="absolute inline-flex size-full animate-ping rounded-full bg-live opacity-70 motion-reduce:animate-none" />
           <span className="relative inline-flex size-2 rounded-full bg-live" />
         </span>
-        <span className="font-mono text-[10.5px] font-semibold tracking-widest text-live">LIVE</span>
+        <span className="font-mono text-[10.5px] font-semibold tracking-widest text-live">SAMPLE FEED</span>
         <SampleBadge />
       </div>
       <div className="group relative min-w-0 flex-1 overflow-hidden">

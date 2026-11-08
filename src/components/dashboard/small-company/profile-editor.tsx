@@ -2,13 +2,17 @@
 
 import { Check, CircleHelp, Plus, Quote, X } from "lucide-react";
 import type { ReactNode } from "react";
+import { Input } from "@/components/ui/input";
 import { jurisdictionName } from "@/data/states";
 import {
+  COMPANY_NAME_MAX,
   FEATURES,
   JURISDICTION_CODES,
   ROLES,
   ROLE_LABEL,
   checkQuote,
+  cleanCompanyName,
+  readCompanyName,
   type ConfirmedProfile,
   type FeatureId,
   type ProductProfileDraft,
@@ -19,6 +23,11 @@ import { Eyebrow } from "../panel";
 
 /** The profile while the user reviews it. null = still unknown. */
 export interface EditableProfile {
+  /** "" = not stated. Used only in drafts. */
+  companyName: string;
+  companyNameQuote: string;
+  /** The reader offered a name that isn't in the user's text. */
+  companyNameRejected: boolean;
   role: Role | null;
   roleQuote: string;
   features: Record<FeatureId, { on: boolean; unknown: boolean; quote: string; quoteFound: boolean }>;
@@ -49,7 +58,11 @@ export function fromDraft(draft: ProductProfileDraft, description: string): Edit
       quote: j.quote,
       quoteFound: checkQuote(j.quote, description),
     }));
+  const company = readCompanyName(draft, description);
   return {
+    companyName: company.name ?? "",
+    companyNameQuote: company.quote,
+    companyNameRejected: company.rejected,
     role: draft.role === "unknown" ? null : draft.role,
     roleQuote: draft.role_quote,
     features,
@@ -63,6 +76,7 @@ export function fromDraft(draft: ProductProfileDraft, description: string): Edit
 export function toConfirmed(p: EditableProfile): ConfirmedProfile | null {
   if (!p.role || p.isGovernment === null) return null;
   return {
+    companyName: cleanCompanyName(p.companyName),
     role: p.role,
     features: FEATURES.map((f) => f.id).filter((id) => p.features[id].on),
     jurisdictions: p.jurisdictions.filter((j) => j.on).map((j) => j.code),
@@ -86,6 +100,9 @@ export function ProfileEditor({
   const available = JURISDICTION_CODES.filter((c) => !profile.jurisdictions.some((j) => j.code === c));
 
   const confirmItems: string[] = [
+    ...(profile.companyNameRejected && !profile.companyName
+      ? ["We couldn't confirm a company name from your text. Add it below if you want it in drafts."]
+      : []),
     ...(profile.role ? [] : ["Pick your role below: we couldn't tell from the description."]),
     ...(profile.isGovernment === null ? ["Are you a government agency? Pick yes or no below."] : []),
     ...unknownFeatures.map((f) => `Not sure about "${f.label}". Turn it on if it applies.`),
@@ -111,6 +128,21 @@ export function ProfileEditor({
           </ul>
         </div>
       )}
+
+      <div className="space-y-1.5">
+        <label htmlFor="company-name">
+          <Eyebrow>Company name (used in drafts)</Eyebrow>
+        </label>
+        <Input
+          id="company-name"
+          value={profile.companyName}
+          maxLength={COMPANY_NAME_MAX}
+          placeholder="Not stated. Drafts will say [Company name]"
+          onChange={(e) => onChange({ ...profile, companyName: e.target.value, companyNameQuote: "" })}
+          className="h-7 text-xs md:text-xs"
+        />
+        {profile.companyNameQuote && <QuoteLine quote={profile.companyNameQuote} />}
+      </div>
 
       <div className="space-y-1.5">
         <Eyebrow>Your role</Eyebrow>

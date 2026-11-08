@@ -14,7 +14,7 @@ import {
 } from "./compliance-views";
 import { GroqError } from "./groq";
 import { isoDay } from "./matching";
-import { citedLabels } from "./notice";
+import { citedLabels, fillCompanyName } from "./notice";
 import { draftNoticeText, prepareNoticeDraft } from "./notice-draft";
 import { ConfirmedProfile, JURISDICTION_CODES } from "./product-profile";
 import { ProductDescription, readProduct } from "./product-reader";
@@ -105,7 +105,9 @@ const LawId = z.enum(LAW_IDS, { error: `law_id must be one of: ${LAW_IDS.join(",
 
 const Profile = ConfirmedProfile.extend({
   jurisdictions: ConfirmedProfile.shape.jurisdictions.min(1, "List at least one jurisdiction."),
-}).describe('A confirmed profile: role, features, jurisdictions (state codes, or "NYC" for New York City) and isGovernment.');
+}).describe(
+  'A confirmed profile: role, features, jurisdictions (state codes, or "NYC" for New York City), isGovernment and, optionally, companyName (used in drafts).',
+);
 
 export function registerComplianceTools(server: McpServer) {
   addTool(server, "list_laws", {
@@ -184,7 +186,7 @@ export function registerComplianceTools(server: McpServer) {
     run: async ({ law_id, profile }, signal) => {
       const prepared = prepareNoticeDraft(law_id, profile);
       if (!prepared.ok) return errorResult(prepared.error);
-      const draft = await draftNoticeText(prepared.prompt, signal);
+      const draft = fillCompanyName(await draftNoticeText(prepared.prompt, signal), profile.companyName);
       const known = new Set(prepared.quotes.map((q) => q.label));
       const stray = [...citedLabels(draft)].filter((label) => !known.has(label));
       return textResult(

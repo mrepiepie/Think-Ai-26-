@@ -13,7 +13,13 @@ import {
   type LawMatch,
   type LawRule,
 } from "./matching";
-import { checkQuote, FEATURE_LABEL, type ConfirmedProfile, type ProductProfileDraft } from "./product-profile";
+import {
+  checkQuote,
+  FEATURE_LABEL,
+  readCompanyName,
+  type ConfirmedProfile,
+  type ProductProfileDraft,
+} from "./product-profile";
 import { RULE_FIELDS, type RuleField, type RuleItem, type RuleObligation } from "./rule-card";
 
 /**
@@ -209,6 +215,12 @@ export function analyzeProductView(draft: ProductProfileDraft, description: stri
   ];
   return {
     draft_profile: {
+      // A name that isn't in the description is dropped, never shown as fact.
+      company_name: {
+        value: readCompanyName(draft, description).name,
+        quote: draft.company_name_quote,
+        quote_check: quoteCheck(draft.company_name_quote, description),
+      },
       role: { value: draft.role, quote: draft.role_quote, quote_check: quoteCheck(draft.role_quote, description) },
       features: draft.features.map((f) => ({
         id: f.id,

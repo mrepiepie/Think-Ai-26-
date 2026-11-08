@@ -41,7 +41,7 @@ Input: `state?` (USPS code, or `NYC` for the city only; `NY` also lists NYC's la
       "status": ["Coming soon"],
       "effective": "Takes effect Jan 1, 2027",
       "effective_date": "2027-01-01",
-      "effective_date_source": "From PRD summary",
+      "effective_date_source": "Official law text",
       "official_url": "https://nyassembly.gov/leg/?default_fld=&leg_video=&bn=S08828&term=2025&Summary=Y&Actions=Y&Text=Y",
       "extracted": true
     }
@@ -122,6 +122,7 @@ Input: `description` (20 to 4,000 characters). Returns a draft profile. Each quo
 ```json
 {
   "draft_profile": {
+    "company_name": { "value": "Parrotfish Hiring Co.", "quote": "Parrotfish Hiring Co.", "quote_check": "found" },
     "role": { "value": "both", "quote": "Parrotfish Hiring Co. (14 staff) makes ShortlistBot, ...", "quote_check": "not_found" },
     "features": [
       { "id": "resume_screening", "label": "Resume screening", "status": "yes", "quote": "AI resume screener", "quote_check": "found" }

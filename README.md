@@ -45,6 +45,7 @@ The US has no single federal AI law, so every state writes its own. A business s
   | New York RAISE Act | 38 | 37 | 1 |
 
 - **AI product reader.** It turns a free-text product description into a profile:
+  - company name, if the description states it (used in drafts);
   - role (developer, deployer or both);
   - features from a fixed list of 9;
   - US states plus NYC;
@@ -53,13 +54,13 @@ The US has no single federal AI law, so every state writes its own. A business s
   Anything unclear comes back as "unknown", and the user confirms everything with toggle chips before matching runs.
 - **Matching engine (no AI).** Hand-reviewed applicability rules for each law. Every duty is sorted by who it is addressed to: **applies to you**, **needs review** or **doesn't apply** (always with a reason). Covered by unit tests.
 - **Streamed notice drafter.** Drafts a notice for any law with a notice or disclosure duty that applies to you. It streams word by word over plain HTTP, has Stop and Copy, cites `[Qn]` quotes and uses `[placeholders]` for unknowns.
+- **Law change alerts and upcoming deadlines.** Built from a reviewed list of dated events, each linked to its source and checked against the official text or PRD section 3 by a test. Lines about your product are computed from the match result.
 - **Map and globe UI.** States are colored by computed status. NYC has its own pin and never colors New York State.
 - **Compliance MCP server.** Six read-only tools for AI assistants at `/api/mcp`. Local demo only (see [MCP](#mcp)).
 
 ### 🧪 Sample data (UI built, data is placeholder)
 - Citizen screen (data center watchdog)
 - AG investigator screen
-- Law change alerts and upcoming deadlines panels on the Small Company screen
 
 ### 🗺️ Roadmap
 - Extract **Illinois HB 3773**. It has no official text saved yet, because the official site refused automated download. Until then it uses PRD facts only and is marked "Rules not extracted yet".
@@ -219,7 +220,7 @@ public/geo/                   Map data (US states/counties, world countries)
 ## Limitations
 
 - **Only 8 laws are tracked, and 7 are extracted.** Illinois uses PRD summaries only, so it has no quotes and no draft button.
-- **SB 53 and RAISE effective dates come from the PRD** and are labelled "From PRD summary", because no verified rule-card item states them.
+- **SB 53's effective date comes from the PRD** and is labelled "From PRD summary", because the official text doesn't state it. RAISE's date comes from the official text (chapter 96, section 3), verified by a test.
 - **"Large frontier developer" duties in SB 53 and RAISE stay in "Needs review".** They only bind developers with over $500M in revenue, and the profile doesn't ask for revenue.
 - **The MCP server has no auth or rate limiting,** so it answers localhost only.
 - **Duty ids are positions in `rule-cards.json`.** Re-running the law reader can shift them; the tests catch this.

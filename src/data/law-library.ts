@@ -1,6 +1,7 @@
 import type { RuleCard, RuleCardsFile, RuleItem, RuleObligation } from "@/lib/rule-card";
 import sourcesJson from "../../data/laws/sources.json";
 import ruleCardsJson from "./generated/rule-cards.json";
+import { LAWS_BY_ID } from "./laws";
 import type { Law } from "./types";
 
 /**
@@ -28,6 +29,18 @@ const RULE_CARDS = ruleCardsJson as unknown as RuleCardsFile;
 
 export function officialSource(lawId: string): OfficialSource | undefined {
   return SOURCES[lawId];
+}
+
+/** Latest official-text fetch date and how much of the law list it covers. */
+export function lawsVerified() {
+  const all = Object.values(SOURCES);
+  const dates = all.flatMap((s) => s.fetched ?? []).sort();
+  return {
+    date: dates[dates.length - 1],
+    fetched: dates.length,
+    total: all.length,
+    notFetched: all.filter((s) => !s.fetched).map((s) => LAWS_BY_ID[s.id].name),
+  };
 }
 
 /** Link for "Read the law": the official text, else the PRD citation. */

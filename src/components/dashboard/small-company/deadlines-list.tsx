@@ -1,75 +1,64 @@
-"use client";
-
-import { LAWS_BY_ID } from "@/data/laws";
-import type { Deadline } from "@/data/types";
-import { daysUntil, useNow } from "@/lib/use-now";
+import { ArrowUpRight } from "lucide-react";
+import type { DeadlineRow } from "@/lib/law-alerts";
 import { cn } from "@/lib/utils";
 import { Panel } from "../panel";
-import { SampleBadge } from "../sample-badge";
 
-function formatDate(iso: string) {
-  return new Date(iso + "T00:00:00Z").toLocaleDateString("en-US", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-    timeZone: "UTC",
-  });
-}
-
-function Countdown({ days }: { days: number }) {
-  if (days < 0) return <span>passed</span>;
-  if (days === 0) return <span className="text-primary">today</span>;
-  return (
-    <span className={cn(days <= 30 && "text-primary")}>
-      in {days} day{days === 1 ? "" : "s"}
-    </span>
-  );
-}
-
-/** Bottom strip: upcoming effective dates and filing deadlines (F14). */
+/**
+ * Bottom strip: upcoming dates (F14), all computed. `rows` is null until the
+ * clock is available, because "upcoming" can't be worked out before then.
+ */
 export function DeadlinesList({
-  deadlines,
+  rows,
+  matched,
   className,
 }: {
-  deadlines: Deadline[];
+  rows: DeadlineRow[] | null;
+  matched: boolean;
   className?: string;
 }) {
-  const now = useNow();
-  const sorted = [...deadlines].sort((a, b) => a.date.localeCompare(b.date));
   return (
-    <Panel title="Upcoming deadlines" sample className={className}>
+    <Panel title="Upcoming deadlines" className={className}>
+      {rows?.length === 0 && (
+        <p className="p-3 text-xs text-muted-foreground">
+          {matched ? "No upcoming dates for the laws that apply to you." : "No upcoming dates across the tracked laws."}
+        </p>
+      )}
       <ol className="divide-y divide-border">
-        {sorted.map((d) => (
+        {rows?.map((d) => (
           <li key={d.id} className="grid grid-cols-[92px_1fr_auto] items-center gap-3 px-3 py-2">
             <div className="font-mono text-[10px]">
-              <div>{d.dateLabel ?? formatDate(d.date)}</div>
-              <div className="text-muted-foreground">
-                {d.approximate
-                  ? "month only"
-                  : now !== null
-                    ? <Countdown days={daysUntil(d.date, now)} />
-                    : " "}
+              <div>{d.dateLabel}</div>
+              <div className={cn("text-muted-foreground", d.daysLeft !== null && d.daysLeft <= 30 && "text-primary")}>
+                {d.countdown}
               </div>
             </div>
             <div className="min-w-0">
-              <div className="truncate text-xs">{d.title}</div>
-              {d.lawId && (
-                <div className="truncate text-[10.5px] text-muted-foreground">
-                  {LAWS_BY_ID[d.lawId]?.name}
-                </div>
-              )}
+              <div className="text-xs leading-snug">{d.title}</div>
+              <div className="flex flex-wrap items-center gap-x-2 text-[10.5px] text-muted-foreground">
+                <span>{d.lawName}</span>
+                {d.sourceUrl && (
+                  <a
+                    href={d.sourceUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-0.5 font-mono text-[9.5px] tracking-wider uppercase hover:text-primary hover:underline focus-visible:text-primary focus-visible:underline focus-visible:outline-none"
+                  >
+                    Source: {d.sourceKind}
+                    <ArrowUpRight className="size-2.5" aria-hidden />
+                  </a>
+                )}
+              </div>
             </div>
-            <div className="flex shrink-0 flex-col items-end gap-1">
+            {d.tag && (
               <span
                 className={cn(
-                  "rounded-sm border px-1 font-mono text-[9px] tracking-wider uppercase",
-                  d.affectsYou ? "border-primary/50 text-primary" : "border-border text-muted-foreground",
+                  "shrink-0 rounded-sm border px-1 font-mono text-[9px] tracking-wider uppercase",
+                  d.tag === "Applies to you" ? "border-primary/50 text-primary" : "border-border text-muted-foreground",
                 )}
               >
-                {d.affectsYou ? "Applies to you" : "FYI"}
+                {d.tag}
               </span>
-              {d.sample && <SampleBadge label="Sample task" />}
-            </div>
+            )}
           </li>
         ))}
       </ol>
