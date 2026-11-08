@@ -32,7 +32,7 @@ The US has no single federal AI law, so every state writes its own. A business s
 - **Law library from official sources.** Official text is saved for 7 of the 8 tracked laws, from state legislature and city council sites (see [Data sources](#data-sources-and-attribution)).
 - **AI law reader with quotes checked in code.** Groq turns each law into a structured "rule card": who is covered, triggers, duties, penalties, enforcement, cure period and effective dates.
   - Every item carries an exact quote, which is then checked against the official text in code.
-  - Extracted so far: **5 laws, 180 items, 173 verified, 7 failed.** Failed items are never shown as facts.
+  - Extracted so far: **7 laws, 309 items, 299 verified, 10 failed.** Failed items are never shown as facts.
 
   | Law | Items | Verified | Failed |
   |---|---|---|---|
@@ -41,6 +41,8 @@ The US has no single federal AI law, so every state writes its own. A business s
   | California AB 2013 | 4 | 4 | 0 |
   | Texas TRAIGA (HB 149) | 89 | 86 | 3 |
   | Colorado SB 26-189 | 62 | 59 | 3 |
+  | California SB 53 | 91 | 89 | 2 |
+  | New York RAISE Act | 38 | 37 | 1 |
 
 - **AI product reader.** It turns a free-text product description into a profile:
   - role (developer, deployer or both);
@@ -52,6 +54,7 @@ The US has no single federal AI law, so every state writes its own. A business s
 - **Matching engine (no AI).** Hand-reviewed applicability rules for each law. Every duty is sorted by who it is addressed to: **applies to you**, **needs review** or **doesn't apply** (always with a reason). Covered by unit tests.
 - **Streamed notice drafter.** Drafts a notice for any law with a notice or disclosure duty that applies to you. It streams word by word over plain HTTP, has Stop and Copy, cites `[Qn]` quotes and uses `[placeholders]` for unknowns.
 - **Map and globe UI.** States are colored by computed status. NYC has its own pin and never colors New York State.
+- **Compliance MCP server.** Six read-only tools for AI assistants at `/api/mcp`. Local demo only (see [MCP](#mcp)).
 
 ### 🧪 Sample data (UI built, data is placeholder)
 - Citizen screen (data center watchdog)
@@ -59,10 +62,10 @@ The US has no single federal AI law, so every state writes its own. A business s
 - Law change alerts and upcoming deadlines panels on the Small Company screen
 
 ### 🗺️ Roadmap
-- Extract the remaining laws. **Illinois HB 3773** has no official text saved yet, because the official site refused automated download. **California SB 53** and **New York RAISE** have their text saved but are not extracted yet. Until then all three use PRD facts only and are marked "Rules not extracted yet".
+- Extract **Illinois HB 3773**. It has no official text saved yet, because the official site refused automated download. Until then it uses PRD facts only and is marked "Rules not extracted yet".
 - An "All states" map layer covering all 50 states.
 - RAG "Ask the law": questions answered from the official text.
-- Compliance MCP and Legislature Watch MCP servers.
+- Legislature Watch MCP server.
 - Live data center news for the citizen screen.
 
 ## How it works
@@ -160,6 +163,16 @@ npm run extract-laws -- --no-cache       # ignore cached chunk results
 
 The law reader caches each chunk's reply in `.cache/extract-laws/`. If it stops on a rate limit, run the same command again and it resumes where it left off. Output goes to `src/data/generated/rule-cards.json`.
 
+## MCP
+
+The app includes a read-only MCP server at `http://localhost:3000/api/mcp`, with tools to list and search laws, read rule cards, analyze a product, check a profile and draft a notice. To connect Claude Code while `npm run dev` is running:
+
+```bash
+claude mcp add --transport http compliance http://localhost:3000/api/mcp
+```
+
+**It has no authentication or rate limiting, so it answers localhost only.** It needs both before any public deployment. Tools, examples and testing steps are in [docs/mcp.md](docs/mcp.md).
+
 ## Project structure
 
 ```
@@ -168,11 +181,16 @@ docs/prd.txt                  Product requirements: the source of truth for fact
 scripts/extract-laws.ts       AI law reader: law text → verified rule cards
 src/app/api/product-reader/   POST: description → draft profile (Groq, structured output)
 src/app/api/draft-notice/     POST: law + profile → streamed notice draft (Groq, text stream)
+src/app/api/mcp/              Compliance MCP server (local only; see docs/mcp.md)
 src/data/generated/           rule-cards.json written by the law reader
 src/data/laws.ts              The 8 tracked laws (facts from the PRD)
 src/data/law-library.ts       Official sources + verified rule-card access
 src/lib/matching.ts           Matching engine: law rules, duty classification, status (no AI)
 src/lib/matching.test.ts      Unit tests for the matching engine
+src/lib/product-reader.ts     AI product reader (web route and MCP)
+src/lib/notice-draft.ts       AI notice drafter (web route and MCP)
+src/lib/mcp-tools.ts          MCP tool definitions
+src/lib/compliance-views.ts   What the MCP tools return (no AI), with tests
 src/lib/groq.ts               Groq client: model config, retries, rate limits, streaming
 src/lib/quote-verify.ts       Checks that a quote appears in the official text
 src/lib/product-profile.ts    Feature list and zod schemas for the product profile
@@ -200,7 +218,10 @@ public/geo/                   Map data (US states/counties, world countries)
 
 ## Limitations
 
-- **Only 8 laws are tracked, and 5 are extracted.** Illinois, SB 53 and RAISE use PRD summaries only, so they have no quotes and no draft button.
+- **Only 8 laws are tracked, and 7 are extracted.** Illinois uses PRD summaries only, so it has no quotes and no draft button.
+- **SB 53 and RAISE effective dates come from the PRD** and are labelled "From PRD summary", because no verified rule-card item states them.
+- **"Large frontier developer" duties in SB 53 and RAISE stay in "Needs review".** They only bind developers with over $500M in revenue, and the profile doesn't ask for revenue.
+- **The MCP server has no auth or rate limiting,** so it answers localhost only.
 - **Duty ids are positions in `rule-cards.json`.** Re-running the law reader can shift them; the tests catch this.
 - **The addressee rules are keyword-based.** Unusual wording lands in "Needs review" rather than being guessed.
 - **The product reader can misread a description.** That is why the user confirms the profile before matching.

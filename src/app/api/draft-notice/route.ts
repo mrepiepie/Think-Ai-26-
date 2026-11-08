@@ -1,33 +1,18 @@
 import { z } from "zod";
-import { jurisdictionName } from "@/data/states";
 import { groqErrorResponse } from "@/lib/api-errors";
-import { GROQ_MODELS, GroqError, groqStream } from "@/lib/groq";
-import { LAW_RULES_BY_ID, matchLaw } from "@/lib/matching";
-import { ConfirmedProfile, FEATURE_LABEL, ROLE_LABEL } from "@/lib/product-profile";
-import { DRAFT_HEADER, noticeQuotes } from "@/lib/notice";
+import { GROQ_MODELS, GroqError } from "@/lib/groq";
+import { ConfirmedProfile } from "@/lib/product-profile";
+import { DRAFT_HEADER } from "@/lib/notice";
+import { noticeDraftStream, prepareNoticeDraft } from "@/lib/notice-draft";
 
 /**
- * NOTICE DRAFTER (AI, streamed as plain text over HTTP).
- *
- * The server re-runs the matching engine for the requested law, so the
- * only law text sent to Groq is the verified quotes of the notice /
- * disclosure duties that apply to this profile. Nothing the client sends
- * is used as a quote.
+ * Notice drafter, streamed as plain text over HTTP. The drafter itself
+ * (re-matching, verified quotes only) is in src/lib/notice-draft.ts.
  */
 
 export const maxDuration = 60;
 
 const Body = z.object({ lawId: z.string(), profile: ConfirmedProfile });
-
-const SYSTEM = `You draft a short notice or disclosure that a company could give to people affected by its AI product. You are not a lawyer and this is not legal advice.
-
-Rules:
-- Base every requirement ONLY on the numbered quotes provided. Do not add other legal requirements, deadlines, penalties or facts.
-- After each sentence that relies on a quote, cite it in square brackets, e.g. [Q1] or [Q2, Q3].
-- Use [square-bracket placeholders] for anything you don't know: [Company name], [Product name], [Contact email], [Date], [Link to bias audit summary], etc. Never invent names, dates, numbers or links.
-- Write in plain English, short paragraphs, addressed to the reader of the notice (e.g. job applicants or consumers).
-- Do NOT write a title line saying it is a draft; that is added for you.
-- End with a final line exactly in the form: "Quotes relied on: Q1, Q3" listing every quote you cited.`;
 
 export async function POST(request: Request) {
   let body: unknown;
@@ -40,46 +25,14 @@ export async function POST(request: Request) {
   if (!parsed.success) {
     return Response.json({ error: "Invalid request.", kind: "bad-input" }, { status: 400 });
   }
-  const { lawId, profile } = parsed.data;
-  const rule = LAW_RULES_BY_ID[lawId];
-  if (!rule) return Response.json({ error: "Unknown law.", kind: "bad-input" }, { status: 400 });
 
-  const match = matchLaw(rule, profile);
-  const quotes = noticeQuotes(match);
-  if (!match.applies || quotes.length === 0) {
-    return Response.json(
-      { error: "This law has no verified notice or disclosure duty that applies to your profile.", kind: "bad-input" },
-      { status: 400 },
-    );
-  }
-
-  const user = [
-    `Law: ${match.law.name} (${jurisdictionName(rule.jurisdictionKey)})`,
-    "",
-    "Company profile:",
-    `- Role: ${ROLE_LABEL[profile.role]}`,
-    `- AI features: ${profile.features.map((f) => FEATURE_LABEL[f]).join(", ") || "none listed"}`,
-    `- Has users/applicants/employees in: ${profile.jurisdictions.map(jurisdictionName).join(", ")}`,
-    `- Government agency: ${profile.isGovernment ? "yes" : "no"}`,
-    "",
-    "Verified quotes from the official law text (the ONLY legal basis you may use):",
-    ...quotes.map((q) => `[${q.label}] "${q.quote}"`),
-    "",
-    "Draft the notice now.",
-  ].join("\n");
+  const prepared = prepareNoticeDraft(parsed.data.lawId, parsed.data.profile);
+  if (!prepared.ok) return Response.json({ error: prepared.error, kind: "bad-input" }, { status: 400 });
 
   let stream: AsyncGenerator<string, void, undefined>;
   let first: IteratorResult<string, void>;
   try {
-    stream = groqStream({
-      system: SYSTEM,
-      user,
-      model: GROQ_MODELS.drafter,
-      reasoningEffort: "none",
-      maxCompletionTokens: 1200,
-      temperature: 0.3,
-      signal: request.signal,
-    });
+    stream = noticeDraftStream(prepared.prompt, request.signal);
     // Pull the first chunk before answering, so setup errors become a proper HTTP status.
     first = await stream.next();
   } catch (err) {

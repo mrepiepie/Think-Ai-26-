@@ -247,7 +247,10 @@ export const LAWS: Law[] = [
     ],
     penalty: null,
     enforcement: { enforcer: null, curePeriod: null, privateRightToSue: null },
-    notes: ["Frontier developers only; does not reach small companies."],
+    notes: [
+      "Frontier developers only; does not reach small companies.",
+      "From PRD summary: developer registration begins Nov 2026. That date is not in the official text.",
+    ],
     smallCompanyRelevance: "rarely",
     sources: [
       {

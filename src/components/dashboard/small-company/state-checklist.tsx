@@ -202,7 +202,10 @@ function LawCard({
         <dt className="text-muted-foreground">Applies to</dt>
         <dd>{law.appliesTo}</dd>
         <dt className="text-muted-foreground">Deadline</dt>
-        <dd>{law.effective}</dd>
+        <dd>
+          {law.effective}
+          {match.rule.effectiveDateFromPrd && " · From PRD summary"}
+        </dd>
         <dt className="text-muted-foreground">Penalty</dt>
         <FactCell items={rules?.penalties} fallback={law.penalty} />
         <dt className="text-muted-foreground">Enforced by</dt>
@@ -278,7 +281,15 @@ function DutyRow({
               {inForce ? "In force" : `From ${formatDay(duty.effectiveDate)}`}
             </span>
             {duty.timing && <span>{duty.timing}</span>}
-            {duty.source === "prd" && <span title="Not extracted from the law text yet">From PRD summary</span>}
+            {duty.source === "prd" ? (
+              <span title="Not extracted from the law text yet">From PRD summary</span>
+            ) : (
+              duty.dateFromPrd && (
+                <span title="The duty is quoted from the law text; its start date comes from the PRD summary">
+                  Date: From PRD summary
+                </span>
+              )
+            )}
           </span>
         </label>
       </div>

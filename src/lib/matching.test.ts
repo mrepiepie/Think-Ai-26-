@@ -73,10 +73,21 @@ describe("reviewed law table", () => {
       }
     }
   });
-  it("laws without a rule card are marked not extracted", () => {
-    for (const id of ["il-hb3773", "ca-sb53", "ny-raise"]) {
-      assert.equal(LAW_RULES.find((r) => r.lawId === id)?.extracted, false);
+  it("only Illinois has no rule card", () => {
+    assert.deepEqual(LAW_RULES.filter((r) => !r.extracted).map((r) => r.lawId), ["il-hb3773"]);
+  });
+  it("SB 53 and RAISE dates rest on the PRD, not a rule-card date item", () => {
+    for (const id of ["ca-sb53", "ny-raise"]) {
+      const rule = LAW_RULES.find((r) => r.lawId === id);
+      assert.equal(rule?.extracted, true);
+      assert.equal(rule?.effectiveDateFromPrd, true);
+      assert.ok(rule?.basis.length, `${id} has no basis`);
+      assert.ok(!rule?.basis.some((b) => b.includes("/effectiveDate/")), `${id} uses a date item`);
     }
+    assert.equal(ruleCardItem("ny-raise/effectiveDate/0")?.verified, false);
+  });
+  it("RAISE keys to New York State, never NYC", () => {
+    assert.equal(LAW_RULES.find((r) => r.lawId === "ny-raise")?.jurisdictionKey, "NY");
   });
 });
 
@@ -180,18 +191,87 @@ describe("frontier model developer in California and New York", () => {
   };
   const matches = matchCompany(profile);
 
-  it("SB 53 and RAISE apply as not-extracted laws; AB 2013 applies", () => {
-    assert.equal(byId(matches, "ca-sb53").applies, true);
-    assert.equal(byId(matches, "ca-sb53").rule.extracted, false);
-    assert.equal(byId(matches, "ny-raise").applies, true);
+  const sb53 = byId(matches, "ca-sb53");
+  const raise = byId(matches, "ny-raise");
+  const duty = (m: LawMatch, id: string) => {
+    const d = [...m.applicable, ...m.needsReview, ...m.notApplicable].find((x) => x.id === id);
+    assert.ok(d, `missing duty ${id}`);
+    return d;
+  };
+
+  it("SB 53 and RAISE apply from their rule cards; AB 2013 applies", () => {
+    assert.equal(sb53.applies, true);
+    assert.equal(sb53.rule.extracted, true);
+    assert.equal(raise.applies, true);
+    assert.equal(raise.rule.extracted, true);
+    assert.ok([...sb53.applicable, ...raise.applicable].every((d) => d.source === "rule-card" && d.quote));
     assert.equal(byId(matches, "ca-ab2013").applies, true);
     assert.ok(ids(byId(matches, "ca-ab2013"), "notApplicable").includes("ca-ab2013/obligations/1")); // exemption
   });
 
+  it("SB 53: real duties land in the right buckets", () => {
+    assert.ok(ids(sb53, "applicable").includes("ca-sb53/obligations/3")); // transparency report
+    assert.equal(duty(sb53, "ca-sb53/obligations/12").bucket, "applicable"); // incident report
+    assert.equal(duty(sb53, "ca-sb53/obligations/12").timing, "within 15 days");
+    assert.match(duty(sb53, "ca-sb53/obligations/0").reason, /large frontier developers/i);
+    assert.equal(duty(sb53, "ca-sb53/obligations/0").bucket, "needsReview");
+    assert.match(duty(sb53, "ca-sb53/obligations/9").reason, /Office of Emergency Services \(a state body\)/);
+    assert.match(duty(sb53, "ca-sb53/obligations/29").reason, /CalCompute consortium \(a state body\)/);
+    assert.equal(duty(sb53, "ca-sb53/obligations/14").bucket, "notApplicable"); // optional amended report
+    assert.equal(duty(sb53, "ca-sb53/obligations/42").bucket, "notApplicable"); // employee's court step
+    assert.equal(sb53.unverifiedCount, 2);
+  });
+
+  it("SB 53: Draft covers real notices, not bans that mention disclosure", () => {
+    assert.deepEqual(sb53.applicable.filter((d) => d.isNotice).map((d) => d.id), [
+      "ca-sb53/obligations/3",
+      "ca-sb53/obligations/13",
+      "ca-sb53/obligations/36",
+      "ca-sb53/obligations/37",
+    ]);
+    assert.equal(duty(sb53, "ca-sb53/obligations/34").isNotice, false);
+  });
+
+  it("RAISE: real duties land in the right buckets", () => {
+    assert.ok(ids(raise, "applicable").includes("ny-raise/obligations/3")); // transparency report
+    assert.equal(duty(raise, "ny-raise/obligations/7").bucket, "applicable"); // incident report
+    assert.equal(duty(raise, "ny-raise/obligations/7").timing, "within seventy-two hours");
+    assert.equal(duty(raise, "ny-raise/obligations/13").bucket, "needsReview"); // disclosure statement
+    assert.equal(duty(raise, "ny-raise/obligations/16").reason, "Duty of the office (a state body), not of companies");
+    assert.deepEqual(raise.applicable.filter((d) => d.isNotice).map((d) => d.id), [
+      "ny-raise/obligations/3",
+      "ny-raise/obligations/8",
+    ]);
+  });
+
+  it("every RAISE duty starts Jan 1, 2027, labelled as a PRD date", () => {
+    for (const d of [...raise.applicable, ...raise.needsReview, ...raise.notApplicable]) {
+      assert.equal(d.effectiveDate, "2027-01-01", d.id);
+      assert.equal(d.dateFromPrd, true, d.id);
+    }
+  });
+
   it("RAISE colors New York State; there is no NYC entry", () => {
     const r = rollupByJurisdiction(matches, profile, none, TODAY);
-    assert.notEqual(r.NY.status, "not-applicable");
+    assert.equal(r.NY.label, "Action needed by Jan 1, 2027");
+    assert.equal(r.CA.label, "Action needed now");
     assert.equal(r.NYC, undefined);
+  });
+
+  it("an NYC-only frontier developer gets RAISE on NY, never on NYC", () => {
+    const nycOnly: ConfirmedProfile = { ...profile, jurisdictions: ["NYC"] };
+    const m = matchCompany(nycOnly);
+    assert.equal(byId(m, "ny-raise").applies, true);
+    const r = rollupByJurisdiction(m, nycOnly, none, TODAY);
+    assert.ok(r.NY.laws.some((l) => l.law.id === "ny-raise"));
+    assert.ok(r.NYC.laws.every((l) => l.law.id !== "ny-raise"));
+  });
+
+  it("a government frontier developer still gets no consortium or agency duties", () => {
+    const gov = byId(matchCompany({ ...profile, isGovernment: true }), "ca-sb53");
+    for (const i of [29, 30, 31, 32, 33, 40, 41]) {
+      assert.ok(ids(gov, "notApplicable").includes(`ca-sb53/obligations/${i}`), `obl ${i}`);
+    }
   });
 });
 

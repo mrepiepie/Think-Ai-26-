@@ -126,8 +126,8 @@ export type ProductProfileDraft = z.infer<typeof ProductProfileDraft>;
 /** The profile after the user resolves every "unknown". Matching runs on this. */
 export const ConfirmedProfile = z.object({
   role: z.enum(ROLES),
-  features: z.array(z.enum(FEATURE_IDS)),
-  jurisdictions: z.array(z.enum(JURISDICTION_CODES)),
+  features: z.array(z.enum(FEATURE_IDS)).max(FEATURE_IDS.length),
+  jurisdictions: z.array(z.enum(JURISDICTION_CODES)).max(JURISDICTION_CODES.length),
   isGovernment: z.boolean(),
 });
 

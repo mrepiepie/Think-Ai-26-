@@ -13,6 +13,7 @@ import type { RuleField, RuleItem, RuleObligation } from "./rule-card";
  *    roles it covers and when it takes effect. Each entry cites the verified
  *    rule-card items it relies on ("lawId/field/index"). Laws with no
  *    extracted rule card use only PRD facts and are marked not extracted.
+ *    A date with no verified quote behind it is flagged effectiveDateFromPrd.
  * 2. Duty level: every verified rule-card obligation is classified by its
  *    addressee ("who") with keyword rules, then sorted into: applies to
  *    you / needs review / doesn't apply (with the reason).
@@ -111,10 +112,16 @@ type CoveredRole = "developer" | "deployer";
 interface DutyOverride {
   /** Replace the keyword classification (reason required). */
   addressees?: Addressee[];
+  /** A specific state body the keyword rules miss. Never lands on a company, even a government one. */
+  namedBody?: string;
   /** Not an action item (exemption, duplicate, rule about contracts...). */
   notADuty?: string;
   /** Only applies in a situation the profile doesn't describe. */
   onlyIf?: string;
+  /** May apply, but the profile can't tell: goes to Needs review with this reason. */
+  needsReview?: string;
+  /** Corrects the keyword notice check (e.g. a ban that merely mentions "disclosure"). */
+  notice?: boolean;
   /** Duty only applies when the profile has this feature. */
   requiresFeature?: { feature: FeatureId; reason: string };
   /** Duty-specific start date (ISO), with the rule-card item it comes from. */
@@ -141,6 +148,8 @@ export interface LawRule {
   /** Who is covered, in plain words (shown when a law doesn't apply). */
   covers: string;
   effectiveDate: string;
+  /** The date comes from the PRD: no verified rule-card item states it. */
+  effectiveDateFromPrd?: true;
   /** Rule-card item ids this entry relies on. Empty when not extracted. */
   basis: string[];
   /** False = no rule card yet; only PRD facts are used. */
@@ -152,6 +161,22 @@ export interface LawRule {
 }
 
 const EMPLOYMENT: FeatureId[] = ["resume_screening", "automated_employment_decision"];
+
+/**
+ * "Large frontier developer" duties: both laws define that as over $500M
+ * annual revenue with affiliates, and the profile has no revenue field.
+ */
+const LARGE_FRONTIER_ONLY: DutyOverride = {
+  needsReview: "Only for large frontier developers (over $500M annual revenue with affiliates). Confirm whether this is you",
+  note: 'who = "large frontier developer"; the keyword rules would read this as any developer.',
+};
+
+const CALCOMPUTE: DutyOverride = {
+  namedBody: "the CalCompute consortium",
+  note: 'who = "consortium": a state-created body the keyword rules read as unknown.',
+};
+
+const FEDERAL_ROUTE_ONLY = "Only if you choose to meet the incident-reporting duty through designated federal standards";
 
 export const LAW_RULES: LawRule[] = [
   {
@@ -316,12 +341,39 @@ export const LAW_RULES: LawRule[] = [
     coveredRoles: ["developer"],
     covers: "Frontier model developers (heaviest duties at $500M+ revenue)",
     effectiveDate: "2026-01-01",
-    basis: [],
-    extracted: false,
-    prdDuties: [
-      { index: 0, addressees: ["developer"] },
-      { index: 1, addressees: ["developer"] },
-    ],
+    // The card's only date item (effectiveDate/0) is about the CalCompute section, not the law.
+    effectiveDateFromPrd: true,
+    basis: ["ca-sb53/coveredParties/0", "ca-sb53/coveredParties/1", "ca-sb53/triggers/0", "ca-sb53/triggers/4"],
+    extracted: true,
+    dutyOverrides: {
+      0: LARGE_FRONTIER_ONLY,
+      1: LARGE_FRONTIER_ONLY,
+      2: LARGE_FRONTIER_ONLY,
+      4: LARGE_FRONTIER_ONLY,
+      5: LARGE_FRONTIER_ONLY,
+      7: LARGE_FRONTIER_ONLY,
+      8: { notice: false, note: "Content rule for documents already published, not a notice of its own." },
+      14: { notADuty: "Optional: a developer may file an amended report", note: 'Quote: "may file an amended report".' },
+      22: { onlyIf: FEDERAL_ROUTE_ONLY, note: 'Quote: "A frontier developer that intends to comply ... by complying with" federal standards.' },
+      29: CALCOMPUTE,
+      30: CALCOMPUTE,
+      31: CALCOMPUTE,
+      32: {
+        namedBody: "the Government Operations Agency",
+        note: 'The keyword rules read "Government Operations Agency" as any government agency.',
+      },
+      33: CALCOMPUTE,
+      34: { notice: false, note: 'Anti-retaliation ban; "disclosing" in the quote misfires the notice keywords.' },
+      35: { notice: false, note: 'Ban on restrictive contracts; "disclosure" in the quote misfires the notice keywords.' },
+      38: LARGE_FRONTIER_ONLY,
+      39: LARGE_FRONTIER_ONLY,
+      40: CALCOMPUTE,
+      41: CALCOMPUTE,
+      42: {
+        notADuty: "A court step for an employee who sues, not a duty of the company",
+        note: 'who = "covered employee": the petitioner serving notice of an injunction petition.',
+      },
+    },
   },
   {
     lawId: "ny-raise",
@@ -330,13 +382,24 @@ export const LAW_RULES: LawRule[] = [
     coveredRoles: ["developer"],
     covers: "Frontier developers only",
     effectiveDate: "2027-01-01",
-    basis: [],
-    extracted: false,
-    prdDuties: [
-      { index: 0, addressees: ["developer"] },
-      // PRD: "Developer registration begins Nov 2026" (month only).
-      { index: 1, addressees: ["developer"], effectiveDate: "2026-11-01" },
-    ],
+    // effectiveDate/0 is unverified; effectiveDate/1 only points to another chapter's date.
+    effectiveDateFromPrd: true,
+    basis: ["ny-raise/coveredParties/1", "ny-raise/coveredParties/5", "ny-raise/triggers/0", "ny-raise/triggers/5"],
+    extracted: true,
+    dutyOverrides: {
+      0: LARGE_FRONTIER_ONLY,
+      1: LARGE_FRONTIER_ONLY,
+      2: LARGE_FRONTIER_ONLY,
+      4: LARGE_FRONTIER_ONLY,
+      6: LARGE_FRONTIER_ONLY,
+      9: { notice: false, note: "Content rule for documents already published, not a notice of its own." },
+      10: LARGE_FRONTIER_ONLY,
+      11: { onlyIf: FEDERAL_ROUTE_ONLY, note: 'Quote: "frontier developers who comply ... by meeting such federal standards".' },
+      12: LARGE_FRONTIER_ONLY,
+      13: LARGE_FRONTIER_ONLY,
+      14: LARGE_FRONTIER_ONLY,
+      15: LARGE_FRONTIER_ONLY,
+    },
   },
 ];
 
@@ -367,6 +430,8 @@ export interface Duty {
   quote: string | null;
   source: "rule-card" | "prd";
   effectiveDate: string;
+  /** The effective date is from the PRD summary, not a verified quote. */
+  dateFromPrd: boolean;
   addressees: Addressee[];
   /** A notice or disclosure duty (eligible for the notice drafter). */
   isNotice: boolean;
@@ -429,7 +494,7 @@ export function profileKeys(profile: ConfirmedProfile): Set<string> {
 function sortDuty(
   base: Omit<Duty, "bucket" | "reason" | "addressees" | "isNotice">,
   cls: AddresseeClass,
-  override: Pick<DutyOverride, "notADuty" | "onlyIf" | "requiresFeature"> | undefined,
+  override: Pick<DutyOverride, "notADuty" | "onlyIf" | "requiresFeature" | "needsReview" | "notice"> | undefined,
   profile: ConfirmedProfile,
   lawReason: string | null,
 ): Duty {
@@ -438,7 +503,8 @@ function sortDuty(
     addressees: cls.addressees,
     bucket,
     reason,
-    isNotice: bucket === "applicable" && isNoticeDuty(base.text, base.quote ?? "", cls.addressees),
+    isNotice:
+      bucket === "applicable" && (override?.notice ?? isNoticeDuty(base.text, base.quote ?? "", cls.addressees)),
   });
 
   if (lawReason) return make("notApplicable", lawReason);
@@ -451,6 +517,7 @@ function sortDuty(
     const body = /^the\b/i.test(cls.namedBody) ? cls.namedBody : `the ${cls.namedBody}`;
     return make("notApplicable", `Duty of ${body} (a state body), not of companies`);
   }
+  if (override?.needsReview) return make("needsReview", override.needsReview);
 
   const mine = addresseesFor(profile);
   if (cls.addressees.some((a) => mine.has(a))) return make("applicable", "");
@@ -508,9 +575,11 @@ export function matchLaw(rule: LawRule, profile: ConfirmedProfile): LawMatch {
         return;
       }
       const override = rule.dutyOverrides?.[index];
-      const cls = override?.addressees
-        ? { addressees: override.addressees, namedBody: null, sector: null }
-        : classifyAddressee(o.who);
+      const cls: AddresseeClass = override?.namedBody
+        ? { addressees: ["government"], namedBody: override.namedBody, sector: null }
+        : override?.addressees
+          ? { addressees: override.addressees, namedBody: null, sector: null }
+          : classifyAddressee(o.who);
       duties.push(
         sortDuty(
           {
@@ -522,6 +591,7 @@ export function matchLaw(rule: LawRule, profile: ConfirmedProfile): LawMatch {
             quote: o.quote,
             source: "rule-card",
             effectiveDate: override?.effectiveDate ?? rule.effectiveDate,
+            dateFromPrd: !override?.effectiveDate && Boolean(rule.effectiveDateFromPrd),
           },
           cls,
           override,
@@ -544,6 +614,7 @@ export function matchLaw(rule: LawRule, profile: ConfirmedProfile): LawMatch {
             quote: null,
             source: "prd",
             effectiveDate: d.effectiveDate ?? rule.effectiveDate,
+            dateFromPrd: true,
           },
           { addressees: d.addressees, namedBody: null, sector: null },
           d,
