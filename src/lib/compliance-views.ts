@@ -8,6 +8,7 @@ import {
   LAW_RULES,
   LAW_RULES_BY_ID,
   OTHER_LAWS_NOTE,
+  hasSilentFacts,
   matchCompany,
   profileKeys,
   reviewedItems,
@@ -124,7 +125,7 @@ export function ruleCardView(lawId: string) {
             text: item.text,
             ...(who ? { who } : {}),
             ...(timing ? { timing } : {}),
-            ...(item.quote ? { quote: item.quote, official_url: card.sourceUrl } : { note: OTHER_LAWS_NOTE }),
+            ...(item.quote ? { quote: item.quote, official_url: card.sourceUrl } : {}),
           },
         ];
       });
@@ -139,6 +140,7 @@ export function ruleCardView(lawId: string) {
     verified_items: verified,
     unverified_hidden: hidden,
     message: `${hidden} unverified item${hidden === 1 ? " was" : "s were"} hidden (quote not found in the official text).`,
+    ...(hasSilentFacts(LAW_RULES_BY_ID[lawId]) ? { note: OTHER_LAWS_NOTE } : {}),
     ...sections,
   };
 }

@@ -23,7 +23,14 @@ export const EVENT_TYPE_LABEL: Record<LawEventType, string> = {
   rulemaking: "Rulemaking",
   registration: "Registration",
   enforcement: "Enforcement",
+  "text-changed": "Text changed",
 };
+
+/**
+ * A "text-changed" event records something a check already saw, so it is
+ * never upcoming and never a deadline, even when it is dated today.
+ */
+const isUpcomingEvent = (e: LawEvent, todayIso: string) => e.type !== "text-changed" && isUpcoming(e.date, todayIso);
 
 const isMonthOnly = (date: string) => date.length === 7;
 
@@ -105,7 +112,7 @@ export function buildAlerts(
       return {
         id: e.id,
         dateLabel: e.dateLabel ?? formatEventDate(e.date),
-        upcoming: todayIso !== null && isUpcoming(e.date, todayIso),
+        upcoming: todayIso !== null && isUpcomingEvent(e, todayIso),
         typeLabel: EVENT_TYPE_LABEL[e.type],
         description: e.description,
         jurisdictionKey: LAW_RULES_BY_ID[e.lawId].jurisdictionKey,
@@ -196,7 +203,7 @@ export function buildDeadlines(
   checked: ReadonlySet<string>,
   todayIso: string,
 ): DeadlineRow[] {
-  const upcoming = events.filter((e) => isUpcoming(e.date, todayIso));
+  const upcoming = events.filter((e) => isUpcomingEvent(e, todayIso));
   let rows: DeadlineRow[];
   if (!matches) {
     rows = upcoming.map((e) => eventRow(e, todayIso, null));

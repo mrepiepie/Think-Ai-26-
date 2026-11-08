@@ -95,10 +95,14 @@ describe("SB 243 enforcement in the MCP views", () => {
     assert.ok(view.obligations.every((i) => /^tx-traiga\/obligations\/\d+$/.test(i.id)));
   });
   it('AB 2013: "not stated" lines come back with no quote and never appear in search', () => {
-    const view = ruleCardView("ca-ab2013") as unknown as { penalties: { text: string; quote?: string; note?: string }[] };
+    const view = ruleCardView("ca-ab2013") as unknown as {
+      note?: string;
+      penalties: { text: string; quote?: string; note?: string }[];
+    };
     assert.deepEqual(view.penalties.map((p) => p.text), ["No penalty stated in the law text"]);
     assert.equal(view.penalties[0].quote, undefined);
-    assert.equal(view.penalties[0].note, "Other laws may still apply");
+    assert.equal(view.note, "Other laws may still apply", "once per law, on the card");
+    assert.equal(view.penalties[0].note, undefined, "not repeated per line");
     assert.equal(searchLaws({ query: "no penalty stated", lawId: "ca-ab2013" }).total_matches, 0);
   });
 });

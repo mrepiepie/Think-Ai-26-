@@ -4,6 +4,8 @@ import { Radar } from "lucide-react";
 import { lawsVerified } from "@/data/law-library";
 import type { Persona } from "@/data/types";
 import { useNow } from "@/lib/use-now";
+import { useWatch } from "@/lib/use-watch";
+import { STATUS_LABEL, type WatchStatus } from "@/lib/watch-types";
 import { PersonaSwitcher } from "./persona-switcher";
 
 const VERIFIED = lawsVerified();
@@ -16,6 +18,25 @@ const VERIFIED_DATE = new Intl.DateTimeFormat("en-GB", {
 const VERIFIED_DETAIL =
   `Official text fetched for ${VERIFIED.fetched} of ${VERIFIED.total} tracked laws.` +
   (VERIFIED.notFetched.length ? ` Not fetched (PRD section 3 only): ${VERIFIED.notFetched.join(", ")}.` : "");
+
+const dayLabel = (d: Date) =>
+  new Intl.DateTimeFormat("en-GB", { day: "numeric", month: "short", year: "numeric", timeZone: "UTC" }).format(d);
+
+/** Says how many laws were really compared, so a date alone can't overstate coverage. */
+function LastChecked() {
+  const summary = useWatch().status?.summary;
+  if (!summary?.lastCheckedAt) return null;
+  const { compared, total, counts } = summary;
+  const detail = (Object.keys(counts) as WatchStatus[])
+    .filter((s) => counts[s] > 0)
+    .map((s) => `${STATUS_LABEL[s]}: ${counts[s]}`)
+    .join(", ");
+  return (
+    <span title={`Latest on-demand check per law. ${detail}.`}>
+      Last checked {dayLabel(new Date(summary.lastCheckedAt))} ({compared} of {total} compared)
+    </span>
+  );
+}
 
 function Clock() {
   const now = useNow();
@@ -40,6 +61,7 @@ function Clock() {
       <span className="font-semibold text-foreground" title={VERIFIED_DETAIL}>
         Laws verified {VERIFIED_DATE}
       </span>
+      <LastChecked />
       <time dateTime={d?.toISOString()} suppressHydrationWarning>
         {date} <span className="hidden sm:inline">· {time} UTC</span>
       </time>

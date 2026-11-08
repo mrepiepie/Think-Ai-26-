@@ -36,6 +36,8 @@ export const GROQ_MODELS = {
    * llama-3.3-70b-versatile is now enterprise-only on Groq.
    */
   drafter: "qwen/qwen3.8-27b",
+  /** Legislature Watch: plain-English summary of a text diff. Strict json_schema, as above. */
+  changeSummary: "openai/gpt-oss-20b",
 } as const;
 
 export type GroqModel = (typeof GROQ_MODELS)[keyof typeof GROQ_MODELS];

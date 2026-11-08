@@ -35,6 +35,7 @@ This Next.js version has breaking changes from older versions. See [AGENTS.md](A
 - Law events (reviewed, sourced) and computed alerts/deadlines: `src/data/law-events.ts`, `src/lib/law-alerts.ts`, tests in `src/lib/law-alerts.test.ts`
 - Notice drafter: `src/lib/notice.ts`, `src/lib/notice-draft.ts` and `src/app/api/draft-notice/`
 - Compliance MCP server: `src/app/api/mcp/route.ts` and `src/lib/mcp-tools.ts`; docs in `docs/mcp.md`
+- Legislature Watch (official page checks): `src/lib/legislature-watch.ts`, `src/lib/law-text.ts`, `src/lib/robots.ts`, MCP at `src/app/api/watch/mcp/`, log in `data/watch/`; docs in `docs/legislature-watch.md`
 - `.cache/` holds Groq extraction caches (git-ignored)
 
 ## Data and honesty rules (always apply)

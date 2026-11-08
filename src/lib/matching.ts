@@ -142,7 +142,7 @@ interface ReviewedFact {
 export const NO_ENFORCER = "No enforcer named in the law text";
 export const NO_PENALTY = "No penalty stated in the law text";
 export const NO_CURE_PERIOD = "No cure period stated in the law text";
-/** Shown with every "not stated" line, so silence doesn't read as "no risk". */
+/** Shown once per law with any "not stated" line, so silence doesn't read as "no risk". */
 export const OTHER_LAWS_NOTE = "Other laws may still apply";
 
 export const isNotStated = (item: { text: string }) =>
@@ -681,6 +681,13 @@ export function enforcementFacts(rule: LawRule, field: "enforcedBy" | "penalties
   const law = LAWS_BY_ID[rule.lawId];
   const prd = field === "penalties" ? law.penalty : law.enforcement[field === "enforcedBy" ? "enforcer" : "curePeriod"];
   return prd ? [{ text: prd, quote: "", verified: false, chunks: [] }] : [];
+}
+
+/** Whether any enforcement line for this law is a "not stated in the law text" line. */
+export function hasSilentFacts(rule: LawRule): boolean {
+  return (["enforcedBy", "penalties", "curePeriod"] as const).some((field) =>
+    enforcementFacts(rule, field).some(isNotStated),
+  );
 }
 
 /** Resolve a "lawId/field/index" rule-card item id. */

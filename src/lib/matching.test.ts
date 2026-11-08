@@ -13,6 +13,7 @@ import {
   checkboxLabel,
   classifyAddressee,
   enforcementFacts,
+  hasSilentFacts,
   isNotStated,
   reviewedItems,
   statusLabelFor,
@@ -510,9 +511,20 @@ describe("reviewed enforcement facts", () => {
       assert.doesNotMatch(src, /\.penalty\b|\.enforcement\b/, file);
     }
   });
-  it("the note is rendered by the shared list both screens use", () => {
-    const src = readFileSync(path.join(process.cwd(), "src", "components", "dashboard", "enforcement-facts.tsx"), "utf8");
-    assert.match(src, /isNotStated\(item\) && .*OTHER_LAWS_NOTE/);
+  it("the note shows once per law on both screens, not once per silent line", () => {
+    const dashboard = path.join(process.cwd(), "src", "components", "dashboard");
+    const shared = readFileSync(path.join(dashboard, "enforcement-facts.tsx"), "utf8");
+    const factList = shared.slice(shared.indexOf("function FactList"), shared.indexOf("function OtherLawsNote"));
+    assert.doesNotMatch(factList, /OTHER_LAWS_NOTE/);
+    assert.match(shared, /hasSilentFacts\(rule\)/);
+    for (const file of ["investigator/cross-state-table.tsx", "small-company/state-checklist.tsx"]) {
+      const src = readFileSync(path.join(dashboard, file), "utf8");
+      assert.equal(src.match(/<OtherLawsNote /g)?.length, 1, file);
+    }
+  });
+  it("hasSilentFacts: true only when a line is silent, and Illinois is never silent", () => {
+    assert.equal(hasSilentFacts(LAW_RULES_BY_ID["ca-ab2013"]), true);
+    assert.equal(hasSilentFacts(LAW_RULES_BY_ID["il-hb3773"]), false);
   });
   it("SB 243: a civil action with all three remedies; the Office only receives and posts reports", () => {
     const items = reviewedItems(LAW_RULES_BY_ID["ca-sb243"], "enforcedBy")!;

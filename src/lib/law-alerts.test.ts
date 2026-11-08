@@ -65,6 +65,9 @@ describe("law events: every one has a real source", () => {
   it("ids are unique", () => {
     assert.equal(new Set(LAW_EVENTS.map((e) => e.id)).size, LAW_EVENTS.length);
   });
+  it("page-check events come from the watch log, never from this reviewed list", () => {
+    assert.ok(!LAW_EVENTS.some((e) => e.type === "text-changed" || e.sourceKind === "Official page check"));
+  });
   it("RAISE's effective date is in the official text; its registration date is not", () => {
     const effective = LAW_EVENTS.find((e) => e.id === "ny-raise-effective");
     assert.equal(effective?.sourceKind, "Official law text");

@@ -16,6 +16,7 @@ CHANGE LOG
 - 8 Nov 2026: added the Colorado enforcement stay covering SB 26-189
   and the official NYC DCWP enforcement date (July 5, 2023).
 - 8 Nov 2026: enforcement, penalty and cure facts corrected against official law text.
+- 8 Nov 2026: Colorado entry notes that existing rights to sue are preserved (C.R.S. 6-1-1706(4)).
 
 ======================================================================
 1. ONE-LINE SUMMARY
@@ -125,10 +126,12 @@ EXAMPLE STATE LAWS
   and replaced by SB 26-189, signed May 14, 2026. SB 26-189 is a
   narrower disclosure law for automated decisions in areas like jobs,
   loans, housing and insurance, effective Jan 1, 2027, enforced by the
-  attorney general only. The 60-day cure applies only if the AG deems a
-  cure possible, is not required for knowing or repeated violations,
-  and is repealed Jan 1, 2030 (C.R.S. 6-1-1706(3)). AG rulemaking
-  hearing held Oct 26, 2026; final rules due by Jan 1, 2027.
+  attorney general only. It creates no new private right of action, but
+  existing rights to sue and other remedies under state or federal law
+  are preserved (C.R.S. 6-1-1706(4)). The 60-day cure applies only if
+  the AG deems a cure possible, is not required for knowing or repeated
+  violations, and is repealed Jan 1, 2030 (C.R.S. 6-1-1706(3)). AG
+  rulemaking hearing held Oct 26, 2026; final rules due by Jan 1, 2027.
   Sources: https://securityboulevard.com/2026/11/us-state-ai-laws-in-force-what-an-enterprise-deployer-actually-owes/
            https://stackcyber.com/posts/ai-colorado-laws
            https://intellisee.com/intelligence/colorado-ai-act-sb-24-205-repeal-2026-compliance-briefing/

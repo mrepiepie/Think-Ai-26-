@@ -57,6 +57,7 @@ The US has no single federal AI law, so every state writes its own. A business s
 - **Law change alerts and upcoming deadlines.** Built from a reviewed list of dated events, each linked to its source and checked against the official text or PRD section 3 by a test. Lines about your product are computed from the match result.
 - **Map and globe UI.** States are colored by computed status. NYC has its own pin and never colors New York State.
 - **Compliance MCP server.** Six read-only tools for AI assistants at `/api/mcp`. Local demo only (see [MCP](#mcp)).
+- **Legislature Watch.** An on-demand check of whether each official page still matches our saved copy, from the checklist or an MCP server. Only 2 of 8 laws can really be compared today, because the other sites block or don't answer automated requests (see [Legislature Watch](#legislature-watch)).
 
 ### 🧪 Sample data (UI built, data is placeholder)
 - Citizen screen (data center watchdog)
@@ -66,7 +67,6 @@ The US has no single federal AI law, so every state writes its own. A business s
 - Extract **Illinois HB 3773**. It has no official text saved yet, because the official site refused automated download. Until then it uses PRD facts only and is marked "Rules not extracted yet".
 - An "All states" map layer covering all 50 states.
 - RAG "Ask the law": questions answered from the official text.
-- Legislature Watch MCP server.
 - Live data center news for the citizen screen.
 
 ## How it works
@@ -174,15 +174,33 @@ claude mcp add --transport http compliance http://localhost:3000/api/mcp
 
 **It has no authentication or rate limiting, so it answers localhost only.** It needs both before any public deployment. Tools, examples and testing steps are in [docs/mcp.md](docs/mcp.md).
 
+## Legislature Watch
+
+Compares each official law page with our saved copy, only when asked. Use the **Check official source** button on a law in the checklist, or the second MCP server:
+
+```bash
+claude mcp add --transport http legislature-watch http://localhost:3000/api/watch/mcp
+```
+
+Each check returns `unchanged`, `changed`, `unreachable`, `blocked` or `no-baseline`, and is added to an append-only log in `data/watch/`. A change shows the raw diff and a labelled AI summary of that diff. **Law text and rule cards are never updated automatically:** after reviewing a change, re-run the law reader.
+
+- **Coverage is limited.** It respects `robots.txt` and never gets around a block, so most sites can't be compared today.
+- **Local only.** The check route and MCP server have no auth or rate limiting, so they answer localhost only.
+- **Vercel needs a database.** Its file system isn't persistent, so a deployed version needs a database or KV store for the log.
+
+Details, including per-site results and limits, are in [docs/legislature-watch.md](docs/legislature-watch.md).
+
 ## Project structure
 
 ```
 data/laws/                    Official law texts (.txt) + sources.json (URLs, publisher, fetch date)
+data/watch/                   Legislature Watch check log (append-only, local only)
 docs/prd.txt                  Product requirements: the source of truth for facts and scope
 scripts/extract-laws.ts       AI law reader: law text → verified rule cards
 src/app/api/product-reader/   POST: description → draft profile (Groq, structured output)
 src/app/api/draft-notice/     POST: law + profile → streamed notice draft (Groq, text stream)
 src/app/api/mcp/              Compliance MCP server (local only; see docs/mcp.md)
+src/app/api/watch/            Legislature Watch: MCP server and check route (local only), status route
 src/data/generated/           rule-cards.json written by the law reader
 src/data/laws.ts              The 8 tracked laws (facts from the PRD)
 src/data/law-library.ts       Official sources + verified rule-card access
@@ -194,6 +212,8 @@ src/lib/mcp-tools.ts          MCP tool definitions
 src/lib/compliance-views.ts   What the MCP tools return (no AI), with tests
 src/lib/groq.ts               Groq client: model config, retries, rate limits, streaming
 src/lib/quote-verify.ts       Checks that a quote appears in the official text
+src/lib/legislature-watch.ts  Official page checks: robots, fetch, diff, AI summary of the diff
+src/lib/law-text.ts           Page text extraction, per-source cleaning and hashing
 src/lib/product-profile.ts    Feature list and zod schemas for the product profile
 src/components/dashboard/     Persona screens, map/globe, checklist, notice drafter
 public/geo/                   Map data (US states/counties, world countries)
@@ -222,7 +242,7 @@ public/geo/                   Map data (US states/counties, world countries)
 - **Only 8 laws are tracked, and 7 are extracted.** Illinois uses PRD summaries only, so it has no quotes and no draft button.
 - **SB 53's effective date comes from the PRD** and is labelled "From PRD summary", because the official text doesn't state it. RAISE's date comes from the official text (chapter 96, section 3), verified by a test.
 - **"Large frontier developer" duties in SB 53 and RAISE stay in "Needs review".** They only bind developers with over $500M in revenue, and the profile doesn't ask for revenue.
-- **The MCP server has no auth or rate limiting,** so it answers localhost only.
+- **The MCP servers have no auth or rate limiting,** so they answer localhost only.
 - **Duty ids are positions in `rule-cards.json`.** Re-running the law reader can shift them; the tests catch this.
 - **The addressee rules are keyword-based.** Unusual wording lands in "Needs review" rather than being guessed.
 - **The product reader can misread a description.** That is why the user confirms the profile before matching.

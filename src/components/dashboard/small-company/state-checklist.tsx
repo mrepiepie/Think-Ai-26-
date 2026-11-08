@@ -10,8 +10,9 @@ import { enforcementNote, formatDay } from "@/lib/compliance";
 import { checkboxLabel, enforcementFacts, type Duty, type JurisdictionRollup, type LawMatch } from "@/lib/matching";
 import { noticeQuotes } from "@/lib/notice";
 import { cn } from "@/lib/utils";
-import { FactList, QuoteToggle } from "../enforcement-facts";
+import { FactList, OtherLawsNote, QuoteToggle } from "../enforcement-facts";
 import { Eyebrow, Panel } from "../panel";
+import { SourceCheck } from "./source-check";
 import { LawTags, StatusPill } from "./status";
 
 /** Right panel: computed per-jurisdiction checklist. */
@@ -225,6 +226,7 @@ function LawCard({
           </>
         )}
       </dl>
+      <OtherLawsNote rule={match.rule} />
 
       {law.notes.length > 0 && (
         <ul className="space-y-1 border-l border-primary/40 pl-2 text-[11px] leading-relaxed text-muted-foreground">
@@ -248,6 +250,8 @@ function LawCard({
         Read the law
         <ArrowUpRight data-icon="inline-end" />
       </a>
+
+      <SourceCheck lawId={law.id} />
     </li>
   );
 }

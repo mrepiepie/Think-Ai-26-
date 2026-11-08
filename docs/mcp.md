@@ -51,7 +51,7 @@ Input: `state?` (USPS code, or `NYC` for the city only; `NY` also lists NYC's la
 
 ### `get_rule_card`
 
-Input: `law_id`. Returns verified items only, and says how many were hidden. `enforcedBy`, `penalties` and `curePeriod` come from hand-reviewed facts (ids like `ca-sb243/penalties/reviewed-0`); an item with no `quote` means the law text states nothing on that point, and carries the `note` "Other laws may still apply". A law with no card (Illinois) gets a message instead of items.
+Input: `law_id`. Returns verified items only, and says how many were hidden. `enforcedBy`, `penalties` and `curePeriod` come from hand-reviewed facts (ids like `ca-sb243/penalties/reviewed-0`); an item with no `quote` means the law text states nothing on that point, and the card then carries one `note`, "Other laws may still apply". A law with no card (Illinois) gets a message instead of items.
 
 ```json
 { "law_id": "ny-raise" }

@@ -2,13 +2,10 @@
 
 import { Quote } from "lucide-react";
 import { useId, useState } from "react";
-import { OTHER_LAWS_NOTE, isNotStated } from "@/lib/matching";
+import { OTHER_LAWS_NOTE, hasSilentFacts, type LawRule } from "@/lib/matching";
 import type { RuleItem } from "@/lib/rule-card";
 
-/**
- * Enforcement, penalty or cure facts, each with its quote where there is one.
- * A "not stated in the law text" line carries a note so it doesn't read as "no risk".
- */
+/** Enforcement, penalty or cure facts, each with its quote where there is one. */
 export function FactList({ items }: { items: RuleItem[] }) {
   if (items.length === 0) return <span className="text-muted-foreground italic">Not verified</span>;
   return (
@@ -16,12 +13,20 @@ export function FactList({ items }: { items: RuleItem[] }) {
       {items.map((item) => (
         <div key={item.text}>
           {item.text}
-          {isNotStated(item) && <div className="text-[10px] text-muted-foreground italic">{OTHER_LAWS_NOTE}</div>}
           {item.quote && <QuoteToggle quote={item.quote} />}
         </div>
       ))}
     </div>
   );
+}
+
+/**
+ * Shown once per law when any of its lines says "not stated in the law text",
+ * so silence doesn't read as "no risk".
+ */
+export function OtherLawsNote({ rule }: { rule: LawRule }) {
+  if (!hasSilentFacts(rule)) return null;
+  return <div className="text-[10px] text-muted-foreground italic">{OTHER_LAWS_NOTE}</div>;
 }
 
 /** Small toggle that reveals the exact supporting sentence(s) from the law. */

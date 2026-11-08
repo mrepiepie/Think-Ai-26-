@@ -9,6 +9,7 @@ import { buildAlerts, buildDeadlines } from "@/lib/law-alerts";
 import { isoDay, matchCompany, rollupByJurisdiction } from "@/lib/matching";
 import type { ConfirmedProfile, ProductProfileDraft } from "@/lib/product-profile";
 import { useNow } from "@/lib/use-now";
+import { useWatch } from "@/lib/use-watch";
 import { AlertsFeed } from "./alerts-feed";
 import { ComplianceMapPanel } from "./compliance-map-panel";
 import { DeadlinesList } from "./deadlines-list";
@@ -52,9 +53,10 @@ export function SmallCompanyScreen() {
     [matches, confirmed, checked, today, filters],
   );
 
+  const { status: watch } = useWatch();
   const alerts = useMemo(
-    () => buildAlerts(LAW_EVENTS, confirmed ? matches : null, checked, clockDay),
-    [confirmed, matches, checked, clockDay],
+    () => buildAlerts([...LAW_EVENTS, ...(watch?.events ?? [])], confirmed ? matches : null, checked, clockDay),
+    [watch, confirmed, matches, checked, clockDay],
   );
   const deadlines = useMemo(
     () => (clockDay ? buildDeadlines(LAW_EVENTS, confirmed ? matches : null, checked, clockDay) : null),

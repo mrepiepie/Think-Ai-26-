@@ -3,7 +3,7 @@ import { stateName } from "@/data/states";
 import type { InvestigatedCompany } from "@/data/types";
 import { TAG_LABEL } from "@/lib/compliance";
 import { LAW_RULES_BY_ID, enforcementFacts } from "@/lib/matching";
-import { FactList } from "../enforcement-facts";
+import { FactList, OtherLawsNote } from "../enforcement-facts";
 import { Panel } from "../panel";
 
 const DASH = <span className="text-muted-foreground">—</span>;
@@ -60,7 +60,10 @@ export function CrossStateTable({
                       </span>
                     </div>
                   </td>
-                  <td className="px-3 py-2">{law ? law.name : <span className="text-muted-foreground">No tracked law</span>}</td>
+                  <td className="px-3 py-2">
+                    {law ? law.name : <span className="text-muted-foreground">No tracked law</span>}
+                    {rule && <OtherLawsNote rule={rule} />}
+                  </td>
                   <td className="px-3 py-2 whitespace-nowrap">
                     {law ? law.tags.map((t) => TAG_LABEL[t]).join(" · ") : DASH}
                   </td>

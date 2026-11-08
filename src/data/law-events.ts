@@ -20,9 +20,11 @@ export type LawEventType =
   | "repealed-replaced"
   | "rulemaking"
   | "registration"
-  | "enforcement";
+  | "enforcement"
+  /** From a Legislature Watch check, derived from the log. Never listed in LAW_EVENTS. */
+  | "text-changed";
 
-export type LawEventSourceKind = "Official law text" | "PRD section 3";
+export type LawEventSourceKind = "Official law text" | "PRD section 3" | "Official page check";
 
 export interface LawEvent {
   id: string;

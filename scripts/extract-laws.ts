@@ -22,6 +22,7 @@ import path from "node:path";
 import { loadEnvConfig } from "@next/env";
 
 import { GROQ_MODELS, GroqError, type GroqModel, groqStructured } from "@/lib/groq";
+import { lawBody } from "@/lib/law-text";
 import { normalizeForMatch, verifyQuote } from "@/lib/quote-verify";
 import {
   ChunkExtraction,
@@ -259,12 +260,6 @@ function mergeAndVerify(
 /* ------------------------------------------------------------------ */
 /* Main                                                                */
 /* ------------------------------------------------------------------ */
-
-function lawBody(fileText: string): string {
-  // data/laws/*.txt start with a short provenance header ending in a ===== rule.
-  const marker = fileText.indexOf("\n" + "=".repeat(70));
-  return marker === -1 ? fileText : fileText.slice(fileText.indexOf("\n", marker + 1) + 1);
-}
 
 function loadExisting(): RuleCardsFile {
   if (existsSync(OUT_FILE)) {
