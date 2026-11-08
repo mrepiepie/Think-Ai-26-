@@ -40,6 +40,7 @@ This Next.js version has breaking changes from older versions. See [AGENTS.md](A
 ## Data and honesty rules (always apply)
 - Law facts come only from official law text (verified quotes) or PRD section 3. Never invent laws, dates, penalties or quotes.
 - Only verified rule-card items are shown as duties. Unverified items stay hidden and counted.
+- "Enforced by", "Penalty" and "Cure period" use the hand-reviewed `reviewedFacts` in `src/lib/matching.ts`, not the AI's rule-card items. Each quote is tested against the law text; "not stated" lines are tested by checking the text is silent.
 - Matching stays plain code with tests. Don't move legal decisions into the AI.
 - Never show "Compliant" or "Non-compliant". Use "Action needed now", "Action needed by <date>", "All confirmed", "Review needed".
 - Sample or placeholder content is labelled "Sample data". Never invent quotes from real, named people. Fictional companies only on the investigator screen.

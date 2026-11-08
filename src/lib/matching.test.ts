@@ -6,9 +6,12 @@ import { STATUS_LABEL } from "./compliance";
 import {
   LAW_RULES,
   LAW_RULES_BY_ID,
+  NO_CURE_PERIOD,
+  NO_ENFORCER,
+  NO_PENALTY,
   checkboxLabel,
   classifyAddressee,
-  reviewedEnforcedBy,
+  reviewedItems,
   statusLabelFor,
   matchCompany,
   rollupByJurisdiction,
@@ -369,16 +372,118 @@ describe("status wording", () => {
 describe("reviewed enforcement facts", () => {
   const lawText = (lawId: string) => readFileSync(path.join(process.cwd(), "data", "laws", `${lawId}.txt`), "utf8");
 
-  it("every override quote is in the official text", () => {
+  const AUDITED = ["nyc-ll144", "tx-traiga", "co-sb26-189", "ca-sb243", "ca-ab2013", "ca-sb53", "ny-raise"];
+  const FIELDS = ["enforcedBy", "penalties", "curePeriod"] as const;
+  const facts = (lawId: string, field: (typeof FIELDS)[number]) => reviewedItems(LAW_RULES_BY_ID[lawId], field)!;
+  const CURE_WORDS = /\bcur(e|es|ed|ing)\b/i;
+
+  it("all 7 laws with rule cards have reviewed facts for all 3 fields", () => {
+    for (const lawId of AUDITED) {
+      for (const field of FIELDS) assert.ok(facts(lawId, field)?.length > 0, `${lawId} ${field}`);
+    }
+  });
+  it("every reviewed quote is in that law's official text", () => {
+    let checked = 0;
+    for (const rule of LAW_RULES.filter((r) => r.reviewedFacts)) {
+      const text = normalizeForMatch(lawText(rule.lawId));
+      for (const list of Object.values(rule.reviewedFacts!)) {
+        for (const { quote } of list) {
+          if (quote === null) continue;
+          const check = verifyQuote(quote, text);
+          assert.ok(check.verified, `${rule.lawId}: ${check.reason}: ${quote}`);
+          checked++;
+        }
+      }
+    }
+    assert.equal(checked, 37);
+  });
+  it('a line with no quote is only ever a "not stated" line', () => {
     for (const rule of LAW_RULES) {
-      for (const fact of rule.enforcedByOverride ?? []) {
-        const check = verifyQuote(fact.quote, normalizeForMatch(lawText(rule.lawId)));
-        assert.ok(check.verified, `${rule.lawId}: ${check.reason}: ${fact.quote}`);
+      for (const list of Object.values(rule.reviewedFacts ?? {})) {
+        for (const { text, quote } of list) {
+          if (quote === null) assert.ok([NO_ENFORCER, NO_PENALTY, NO_CURE_PERIOD].includes(text), text);
+        }
       }
     }
   });
+  it('"no cure period" is only said of laws whose text never mentions a cure', () => {
+    for (const lawId of AUDITED) {
+      const says = facts(lawId, "curePeriod").some((f) => f.text === NO_CURE_PERIOD);
+      assert.equal(says, !CURE_WORDS.test(lawText(lawId)), lawId);
+    }
+  });
+  it("AB 2013: the text is silent on enforcement and penalties, and the app says so", () => {
+    assert.doesNotMatch(lawText("ca-ab2013"), /penalt|damages|civil action|enforce|attorney general|injunct|liable|violation/i);
+    assert.deepEqual(facts("ca-ab2013", "enforcedBy").map((f) => f.text), ["No enforcer named in the law text"]);
+    assert.deepEqual(facts("ca-ab2013", "penalties").map((f) => f.text), ["No penalty stated in the law text"]);
+  });
+  it("no law but AB 2013 says it has no penalty or enforcer", () => {
+    for (const lawId of AUDITED.filter((id) => id !== "ca-ab2013")) {
+      assert.ok(!facts(lawId, "penalties").some((f) => f.text === NO_PENALTY), lawId);
+      assert.ok(!facts(lawId, "enforcedBy").some((f) => f.text === NO_ENFORCER), lawId);
+    }
+  });
+  it("every dollar figure shown appears in its own quote", () => {
+    // RAISE spells its amounts out in words, so it is checked separately below.
+    for (const lawId of AUDITED.filter((id) => id !== "ny-raise")) {
+      for (const field of FIELDS) {
+        for (const { text, quote } of facts(lawId, field)) {
+          for (const [amount] of text.matchAll(/\$[\d,]*\d/g)) assert.ok(quote.includes(amount), `${lawId}: ${amount}`);
+        }
+      }
+    }
+    const raise = facts("ny-raise", "penalties");
+    assert.match(raise[0].text, /\$1 million .*\$3 million/);
+    assert.match(raise[0].quote, /one million dollars for a first violation .*three million dollars per subsequent/);
+    assert.match(raise[1].text, /\$1,000 per day/);
+    assert.match(raise[1].quote, /one thousand dollars for each day/);
+  });
+  it("NYC: same-day violations, each day and each missed notice are spelled out", () => {
+    const texts = facts("nyc-ll144", "penalties").map((f) => f.text).join(" ");
+    assert.match(texts, /each additional violation that same day/);
+    assert.match(texts, /Each day a tool is used/);
+    assert.match(texts, /Each failure to give a required notice/);
+  });
+  it("Texas: the agency exception is named, and penalties are only for uncured violations", () => {
+    assert.match(facts("tx-traiga", "enforcedBy")[0].text, /except for state-agency sanctions/);
+    assert.ok(facts("tx-traiga", "enforcedBy").some((f) => /private right of action/.test(f.text)));
+    assert.match(facts("tx-traiga", "penalties")[0].text, /^If a violation isn't cured/);
+    assert.ok(facts("tx-traiga", "penalties").some((f) => /\$100,000/.test(f.text)));
+    assert.match(facts("tx-traiga", "curePeriod")[0].quote, /provides the attorney general with a written statement/);
+  });
+  it("Colorado: rule-making isn't enforcement, and cure is conditional and repealed in 2030", () => {
+    assert.ok(!facts("co-sb26-189", "enforcedBy").some((f) => /rules|stakeholder/i.test(f.text)));
+    const cure = facts("co-sb26-189", "curePeriod").map((f) => f.text).join(" ");
+    assert.match(cure, /only if it deems a cure possible/);
+    assert.match(cure, /knowing or repeated/);
+    assert.match(cure, /repealed effective Jan 1, 2030/);
+    // The only dollar figure in the text is the budget appropriation.
+    const withDollars = lawText("co-sb26-189").split(/\r?\n/).filter((l) => l.includes("$"));
+    assert.equal(withDollars.length, 1);
+    assert.match(withDollars[0], /SECTION 4\. Appropriation/);
+    assert.match(facts("co-sb26-189", "penalties")[0].text, /states no dollar amount/);
+  });
+  it("SB 53: the penalty is limited to large frontier developers; fees are for whistleblower suits", () => {
+    const [penalty, fees] = facts("ca-sb53", "penalties");
+    assert.match(penalty.text, /^A large frontier developer/);
+    assert.match(fees.text, /whistleblower section/);
+    assert.match(facts("ca-sb53", "enforcedBy")[0].text, /only in a civil action brought by the Attorney General/);
+  });
+  it("RAISE: no private right of action, and the office is identified", () => {
+    const enforcedBy = facts("ny-raise", "enforcedBy");
+    assert.ok(enforcedBy.some((f) => /^No private right of action/.test(f.text)));
+    assert.match(enforcedBy[1].text, /Department of Financial Services/);
+  });
+  it("wrong or misplaced rule-card lines are no longer shown", () => {
+    const shown = AUDITED.flatMap((id) => FIELDS.flatMap((field) => facts(id, field).map((f) => f.text))).join("\n");
+    assert.doesNotMatch(shown, /enforces reporting|adopting rules|^Violations are enforceable only/m);
+    assert.doesNotMatch(shown, /Violations can incur civil penalties/);
+  });
+  it("Illinois has no card, so it keeps its labelled PRD facts", () => {
+    assert.equal(reviewedItems(LAW_RULES_BY_ID["il-hb3773"], "penalties"), undefined);
+  });
   it("SB 243: a civil action with all three remedies; the Office only receives and posts reports", () => {
-    const items = reviewedEnforcedBy(LAW_RULES_BY_ID["ca-sb243"])!;
+    const items = reviewedItems(LAW_RULES_BY_ID["ca-sb243"], "enforcedBy")!;
     assert.equal(items.length, 2);
     assert.match(items[0].text, /civil action/);
     assert.match(items[0].text, /injunctive relief/);
@@ -398,8 +503,10 @@ describe("reviewed enforcement facts", () => {
     assert.equal(officeLines.length, 3);
     for (const line of officeLines) assert.doesNotMatch(line, /enforce|penalt|civil action/i);
   });
-  it("other laws keep their rule-card items", () => {
-    assert.equal(reviewedEnforcedBy(LAW_RULES_BY_ID["tx-traiga"]), undefined);
+  it("SB 243's penalty line now includes the injunctive relief the card hid", () => {
+    const [remedies] = reviewedItems(LAW_RULES_BY_ID["ca-sb243"], "penalties")!;
+    assert.match(remedies.text, /injunctive relief/);
+    assert.match(remedies.quote, /\(a\) Injunctive relief\./);
   });
 });
 

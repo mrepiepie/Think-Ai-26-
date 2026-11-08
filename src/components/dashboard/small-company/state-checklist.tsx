@@ -7,7 +7,7 @@ import { readTheLawLink, verifiedRules } from "@/data/law-library";
 import { jurisdictionName } from "@/data/states";
 import type { ComplianceStatus } from "@/data/types";
 import { enforcementNote, formatDay } from "@/lib/compliance";
-import { checkboxLabel, reviewedEnforcedBy, type Duty, type JurisdictionRollup, type LawMatch } from "@/lib/matching";
+import { checkboxLabel, reviewedItems, type Duty, type JurisdictionRollup, type LawMatch } from "@/lib/matching";
 import { noticeQuotes } from "@/lib/notice";
 import type { RuleItem } from "@/lib/rule-card";
 import { cn } from "@/lib/utils";
@@ -122,6 +122,9 @@ function LawCard({
   const canDraft = noticeQuotes(match).length > 0;
   const done = match.applicable.filter((d) => checked.has(d.id)).length;
   const note = enforcementNote(law);
+  const penalties = reviewedItems(match.rule, "penalties") ?? rules?.penalties;
+  const enforcedBy = reviewedItems(match.rule, "enforcedBy") ?? rules?.enforcedBy;
+  const curePeriod = reviewedItems(match.rule, "curePeriod") ?? rules?.curePeriod;
 
   return (
     <li className="space-y-2.5 px-3 py-3">
@@ -209,13 +212,13 @@ function LawCard({
           {match.rule.effectiveDateFromPrd && " · From PRD summary"}
         </dd>
         <dt className="text-muted-foreground">Penalty</dt>
-        <FactCell items={rules?.penalties} fallback={law.penalty} />
+        <FactCell items={penalties} fallback={law.penalty} />
         <dt className="text-muted-foreground">Enforced by</dt>
-        <FactCell items={reviewedEnforcedBy(match.rule) ?? rules?.enforcedBy} fallback={law.enforcement.enforcer} />
-        {(rules?.curePeriod.length || law.enforcement.curePeriod) && (
+        <FactCell items={enforcedBy} fallback={law.enforcement.enforcer} />
+        {(curePeriod?.length || law.enforcement.curePeriod) && (
           <>
             <dt className="text-muted-foreground">Cure period</dt>
-            <FactCell items={rules?.curePeriod} fallback={law.enforcement.curePeriod} />
+            <FactCell items={curePeriod} fallback={law.enforcement.curePeriod} />
           </>
         )}
       </dl>
@@ -349,9 +352,9 @@ function FactCell({ items, fallback }: { items: RuleItem[] | undefined; fallback
     return (
       <dd className="space-y-1">
         {items.map((item) => (
-          <div key={item.quote}>
+          <div key={item.text}>
             {item.text}
-            <QuoteToggle quote={item.quote} />
+            {item.quote && <QuoteToggle quote={item.quote} />}
           </div>
         ))}
       </dd>

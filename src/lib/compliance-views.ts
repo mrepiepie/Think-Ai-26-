@@ -9,7 +9,7 @@ import {
   LAW_RULES_BY_ID,
   matchCompany,
   profileKeys,
-  reviewedEnforcedBy,
+  reviewedItems,
   rollupByJurisdiction,
   type Duty,
   type LawMatch,
@@ -84,10 +84,10 @@ export function listLawsView(filter: { state?: string; status?: LawStatusTag }) 
 
 const asObligation = (item: RuleItem) => item as Partial<RuleObligation>;
 
-/** A card's items with their ids. Reviewed enforcement items replace the extracted ones. */
+/** A card's items with their ids. Reviewed items replace the extracted ones for that field. */
 function cardItems(card: RuleCard, lawId: string, field: RuleField): { id: string; item: RuleItem }[] {
-  const reviewed = field === "enforcedBy" ? reviewedEnforcedBy(LAW_RULES_BY_ID[lawId]) : undefined;
-  if (reviewed) return reviewed.map((item, i) => ({ id: `${lawId}/enforcedBy/reviewed-${i}`, item }));
+  const reviewed = reviewedItems(LAW_RULES_BY_ID[lawId], field);
+  if (reviewed) return reviewed.map((item, i) => ({ id: `${lawId}/${field}/reviewed-${i}`, item }));
   return (card[field] as RuleItem[]).map((item, i) => ({ id: `${lawId}/${field}/${i}`, item }));
 }
 
@@ -114,7 +114,8 @@ export function ruleCardView(lawId: string) {
           hidden++;
           return [];
         }
-        verified++;
+        // A "not stated in the law text" line has no quote, so it isn't a verified quote.
+        if (item.quote) verified++;
         const { who, timing } = asObligation(item);
         return [
           {
@@ -122,8 +123,7 @@ export function ruleCardView(lawId: string) {
             text: item.text,
             ...(who ? { who } : {}),
             ...(timing ? { timing } : {}),
-            quote: item.quote,
-            official_url: card.sourceUrl,
+            ...(item.quote ? { quote: item.quote, official_url: card.sourceUrl } : {}),
           },
         ];
       });
@@ -176,7 +176,7 @@ export function searchLaws(input: { query: string; lawId?: string; limit?: numbe
     if (!card) continue;
     for (const field of SEARCH_ORDER) {
       for (const { id, item } of cardItems(card, lawId, field)) {
-        if (!item.verified) continue;
+        if (!item.verified || !item.quote) continue;
         const haystack = words(`${item.text} ${item.quote} ${asObligation(item).who ?? ""}`);
         const hits = terms.map((t) => haystack.filter((w) => w.startsWith(t)).length);
         if (terms.length === 0 || hits.some((n) => n === 0)) continue;

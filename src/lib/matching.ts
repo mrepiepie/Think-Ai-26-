@@ -130,11 +130,20 @@ interface DutyOverride {
   note: string;
 }
 
-/** A hand-reviewed fact. Its quote is checked against the law text by a test. */
+/**
+ * A hand-reviewed fact. A test checks its quote against the law text. A null
+ * quote means the law text states nothing on this; a test checks that too.
+ */
 interface ReviewedFact {
   text: string;
-  quote: string;
+  quote: string | null;
 }
+
+export const NO_ENFORCER = "No enforcer named in the law text";
+export const NO_PENALTY = "No penalty stated in the law text";
+export const NO_CURE_PERIOD = "No cure period stated in the law text";
+
+const notStated = (text: string): ReviewedFact[] => [{ text, quote: null }];
 
 interface PrdDuty {
   /** Index into laws.ts obligations (PRD facts). */
@@ -164,8 +173,11 @@ export interface LawRule {
   dutyOverrides?: Record<number, DutyOverride>;
   /** Duties from PRD facts, for laws with no rule card. */
   prdDuties?: PrdDuty[];
-  /** Replaces the card's enforcedBy items when the extraction got them wrong. */
-  enforcedByOverride?: ReviewedFact[];
+  /**
+   * Replaces the card's items for a field. Audited by hand against the law
+   * text for enforcedBy, penalties and curePeriod (8 Nov 2026).
+   */
+  reviewedFacts?: Partial<Record<RuleField, ReviewedFact[]>>;
 }
 
 const EMPLOYMENT: FeatureId[] = ["resume_screening", "automated_employment_decision"];
@@ -196,6 +208,43 @@ export const LAW_RULES: LawRule[] = [
     effectiveDate: "2023-01-01",
     basis: ["nyc-ll144/coveredParties/0", "nyc-ll144/triggers/0", "nyc-ll144/effectiveDate/0"],
     extracted: true,
+    reviewedFacts: {
+      enforcedBy: [
+        {
+          text: "The corporation counsel, or someone it designates on behalf of the department, can go to court to correct violations, including an order to follow the law.",
+          quote:
+            "The corporation counsel or such other persons designated by the corporation counsel on behalf of the department may initiate in any court of competent jurisdiction any action or proceeding that may be appropriate or necessary for correction of any violation issued pursuant this subchapter, including mandating compliance with the provisions of this chapter or such other relief as may be appropriate.",
+        },
+        {
+          text: "Civil penalty proceedings go to a tribunal at the Office of Administrative Trials and Hearings, or another designated city agency.",
+          quote:
+            "A proceeding to recover any civil penalty authorized by this subchapter is returnable to any tribunal established within the office of administrative trials and hearings or within any agency of the city designated to conduct such proceedings.",
+        },
+        {
+          text: "The law doesn't limit a candidate's or employee's right to bring a civil action, or the human rights commission's authority under title 8.",
+          quote:
+            "The provisions of this subchapter shall not be construed to limit any right of any candidate or employee for an employment decision to bring a civil action in any court of competent jurisdiction, or to limit the authority of the commission on human rights to enforce the provisions of title 8, in accordance with law.",
+        },
+      ],
+      penalties: [
+        {
+          text: "Civil penalty of up to $500 for a first violation and each additional violation that same day, then $500 to $1,500 for each subsequent violation.",
+          quote:
+            "Any person that violates any provision of this subchapter or any rule promulgated pursuant to this subchapter is liable for a civil penalty of not more than $500 for a first violation and each additional violation occurring on the same day as the first violation, and not less than $500 nor more than $1,500 for each subsequent violation.",
+        },
+        {
+          text: "Each day a tool is used in violation counts as a separate violation.",
+          quote:
+            "Each day on which an automated employment decision tool is used in violation of this section shall give rise to a separate violation of subdivision a of section 20-871.",
+        },
+        {
+          text: "Each failure to give a required notice counts as a separate violation.",
+          quote:
+            "Failure to provide any notice to a candidate or an employee in violation of paragraphs 1, 2 or 3 of subdivision b of section 20-871 shall constitute a separate violation.",
+        },
+      ],
+      curePeriod: notStated(NO_CURE_PERIOD),
+    },
   },
   {
     lawId: "il-hb3773",
@@ -237,6 +286,53 @@ export const LAW_RULES: LawRule[] = [
       "tx-traiga/effectiveDate/0",
     ],
     extracted: true,
+    reviewedFacts: {
+      enforcedBy: [
+        {
+          text: "The Attorney General has exclusive authority to enforce, except for state-agency sanctions under Section 552.106.",
+          quote: "The attorney general has exclusive authority to enforce this chapter, except to the extent provided by Section 552.106.",
+        },
+        {
+          text: "No private right of action.",
+          quote:
+            "This chapter does not provide a basis for, and is not subject to, a private right of action for a violation of this chapter or any other law.",
+        },
+        {
+          text: "A state agency may sanction someone it licenses, registers or certifies, once that person is found in violation and the Attorney General recommends it.",
+          quote:
+            "A state agency may impose sanctions against a person licensed, registered, or certified by that agency for a violation of Subchapter B if: (1) the person has been found in violation of this chapter under Section 552.105; and (2) the attorney general has recommended additional enforcement by the applicable agency.",
+        },
+      ],
+      penalties: [
+        {
+          text: "If a violation isn't cured: $10,000 to $12,000 per violation a court finds curable (or a breach of a cure statement), $80,000 to $200,000 per violation it finds uncurable, and $2,000 to $40,000 per day for a continued violation.",
+          quote:
+            "A person who violates this chapter and does not cure the violation under Section 552.104 is liable to this state for a civil penalty in an amount of: (1) for each violation the court determines to be curable or a breach of a statement submitted to the attorney general under Section 552.104(b)(2), not less than $10,000 and not more than $12,000; (2) for each violation the court determines to be uncurable, not less than $80,000 and not more than $200,000; and (3) for a continued violation, not less than $2,000 and not more than $40,000 for each day the violation continues.",
+        },
+        {
+          text: "The Attorney General can also seek an injunction, attorney's fees, court costs and investigative expenses.",
+          quote:
+            "The attorney general may bring an action in the name of this state to: (1) collect a civil penalty under this section; (2) seek injunctive relief against further violation of this chapter; and (3) recover attorney's fees and reasonable court costs or other investigative expenses.",
+        },
+        {
+          text: "State agency sanctions can include suspension, probation or revocation of a license, and a monetary penalty of up to $100,000.",
+          quote:
+            "Sanctions under this section may include: (1) suspension, probation, or revocation of a license, registration, certificate, or other authorization to engage in an activity; and (2) a monetary penalty not to exceed $100,000.",
+        },
+        {
+          text: "No civil penalty action for an AI system that hasn't been deployed.",
+          quote:
+            "The attorney general may not bring an action to collect a civil penalty under this section against a person for an artificial intelligence system that has not been deployed.",
+        },
+      ],
+      curePeriod: [
+        {
+          text: "The Attorney General can't sue before the 60th day after giving notice, or at all if before then the person cures the violation and sends a written statement with supporting documentation and any needed policy changes.",
+          quote:
+            "The attorney general may not bring an action against the person: (1) before the 60th day after the date the attorney general provides the notice under Subsection (a); or (2) if, before the 60th day after the date the attorney general provides the notice under Subsection (a), the person: (A) cures the identified violation; and (B) provides the attorney general with a written statement that the person has: (i) cured the alleged violation; (ii) provided supporting documentation to show the manner in which the person cured the violation; and (iii) made any necessary changes to internal policies to reasonably prevent further violation of this chapter.",
+        },
+      ],
+    },
     dutyOverrides: {
       5: {
         addressees: ["government"],
@@ -288,6 +384,57 @@ export const LAW_RULES: LawRule[] = [
       "co-sb26-189/effectiveDate/4",
     ],
     extracted: true,
+    reviewedFacts: {
+      enforcedBy: [
+        {
+          text: "The Attorney General enforces this law through the Colorado Consumer Protection Act.",
+          quote: 'THE ATTORNEY GENERAL SHALL ENFORCE THIS PART 17 THROUGH THE "COLORADO CONSUMER PROTECTION ACT", THIS ARTICLE 1.',
+        },
+        {
+          text: "Violations of the disclosure and consumer-rights sections are enforceable only by the Attorney General.",
+          quote:
+            "VIOLATIONS OF THE DISCLOSURE REQUIREMENTS AND CONSUMER RIGHTS DESCRIBED IN SECTIONS 6-1-1702, 6-1-1703, 6-1-1704, AND 6-1-1705 ARE ENFORCEABLE EXCLUSIVELY BY THE ATTORNEY GENERAL WITHOUT REGARD TO ANY OTHER PROVISION IN THIS TITLE 6.",
+        },
+        {
+          text: "No new private right of action, but existing rights and remedies stay, including anti-discrimination, consumer protection and product liability law.",
+          quote:
+            'NOTHING IN THIS PART 17 CREATES A NEW PRIVATE RIGHT OF ACTION. NOTHING IN THIS PART 17 LIMITS OR REDUCES ANY EXISTING RIGHTS OR REMEDIES AVAILABLE UNDER STATE OR FEDERAL LAW, INCLUDING THE "COLORADO ANTI-DISCRIMINATION ACT", PARTS 3 TO 8 OF ARTICLE 34 OF TITLE 24; THE "COLORADO CONSUMER PROTECTION ACT", THIS ARTICLE 1; PRODUCT LIABILITY LAW; OR OTHER APPLICABLE LAW.',
+        },
+        {
+          text: "A developer or deployer may be held liable in an action alleging unlawful discrimination under state anti-discrimination laws.",
+          quote:
+            'A DEVELOPER OR DEPLOYER MAY BE HELD LIABLE IN AN ACTION ALLEGING UNLAWFUL DISCRIMINATION UNDER STATE ANTI-DISCRIMINATION LAWS, INCLUDING THE "COLORADO ANTI-DISCRIMINATION ACT", PARTS 3 TO 8 OF ARTICLE 34 OF TITLE 24, ARISING FROM A CONSEQUENTIAL DECISION MATERIALLY INFLUENCED BY A COVERED ADMT.',
+        },
+      ],
+      penalties: [
+        {
+          text: "A violation is a deceptive trade practice under the Colorado Consumer Protection Act. This law's text states no dollar amount for violations.",
+          quote:
+            'A VIOLATION OF THIS PART 17 IS A DECEPTIVE TRADE PRACTICE AND IS SUBJECT TO THE PROVISIONS OF THE "COLORADO CONSUMER PROTECTION ACT", THIS ARTICLE 1.',
+        },
+      ],
+      curePeriod: [
+        {
+          text: "60 days after a notice of violation, but the Attorney General issues that notice only if it deems a cure possible.",
+          quote:
+            "PRIOR TO ANY ENFORCEMENT ACTION FOR A VIOLATION OF THIS PART 17, THE ATTORNEY GENERAL SHALL ISSUE A NOTICE OF VIOLATION TO A DEVELOPER OR DEPLOYER IF A CURE IS DEEMED POSSIBLE BY THE ATTORNEY GENERAL. (b) IF THE DEVELOPER OR DEPLOYER FAILS TO CURE A VIOLATION WITHIN SIXTY DAYS AFTER RECEIPT OF A NOTICE OF VIOLATION, THE ATTORNEY GENERAL MAY BRING AN ACTION PURSUANT TO THIS SECTION.",
+        },
+        {
+          text: "No cure period is required for knowing or repeated violations.",
+          quote:
+            "IF THE ATTORNEY GENERAL FINDS AND CAN DEMONSTRATE THAT A DEVELOPER OR DEPLOYER KNOWINGLY VIOLATED THIS PART 17 OR A DEVELOPER OR DEPLOYER REPEATEDLY VIOLATED THIS PART 17, THE ATTORNEY GENERAL IS NOT REQUIRED TO PROVIDE A CURE PERIOD BEFORE SEEKING PENALTIES OR OTHER RELIEF.",
+        },
+        {
+          text: "A court may treat a cure within 60 days of written notice as a mitigating factor.",
+          quote:
+            "IF A VIOLATION IS DISCOVERED IN THE COURSE OF AN ENFORCEMENT ACTION, A COURT MAY CONSIDER THAT A DEVELOPER OR DEPLOYER CURED THE VIOLATION WITHIN SIXTY DAYS AFTER RECEIPT OF WRITTEN NOTICE AS A MITIGATING FACTOR IN DETERMINING CIVIL PENALTIES OR OTHER MONETARY RELIEF, IF ANY.",
+        },
+        {
+          text: "The subsection with these cure rules is repealed effective Jan 1, 2030.",
+          quote: "THIS SUBSECTION (3) IS REPEALED, EFFECTIVE JANUARY 1, 2030.",
+        },
+      ],
+    },
     dutyOverrides: {
       3: { notADuty: "Same duty as the developer record-keeping duty above", note: "Duplicate of obligations/2." },
       12: { notADuty: "Same duty as the accessible-notices duty above", note: "Duplicate of obligations/11." },
@@ -312,18 +459,34 @@ export const LAW_RULES: LawRule[] = [
     extracted: true,
     // The card says the Office "enforces reporting", but § 22603 only has it receive and post
     // reports. § 22605 is the only enforcement route the text names, and the card missed it.
-    enforcedByOverride: [
-      {
-        text: "A person who suffers injury in fact from a violation can bring a civil action for injunctive relief, damages (the greater of actual damages or $1,000 per violation), and reasonable attorney's fees and costs.",
-        quote:
-          "A person who suffers injury in fact as a result of a violation of this chapter may bring a civil action to recover all of the following relief: (a) Injunctive relief. (b) Damages in an amount equal to the greater of actual damages or one thousand dollars ($1,000) per violation. (c) Reasonable attorney’s fees and costs.",
-      },
-      {
-        text: "Annual reports go to the Office of Suicide Prevention, which posts the data. This law doesn't name it as an enforcer.",
-        quote:
-          "“Office” means the Office of Suicide Prevention established pursuant to Section 131300 of the Health and Safety Code. ... Beginning July 1, 2027, an operator shall annually report to the office all of the following ... The office shall post data from a report required by this section on its internet website.",
-      },
-    ],
+    reviewedFacts: {
+      enforcedBy: [
+        {
+          text: "A person who suffers injury in fact from a violation can bring a civil action for injunctive relief, damages (the greater of actual damages or $1,000 per violation), and reasonable attorney's fees and costs.",
+          quote:
+            "A person who suffers injury in fact as a result of a violation of this chapter may bring a civil action to recover all of the following relief: (a) Injunctive relief. (b) Damages in an amount equal to the greater of actual damages or one thousand dollars ($1,000) per violation. (c) Reasonable attorney’s fees and costs.",
+        },
+        {
+          text: "Annual reports go to the Office of Suicide Prevention, which posts the data. This law doesn't name it as an enforcer.",
+          quote:
+            "“Office” means the Office of Suicide Prevention established pursuant to Section 131300 of the Health and Safety Code. ... Beginning July 1, 2027, an operator shall annually report to the office all of the following ... The office shall post data from a report required by this section on its internet website.",
+        },
+      ],
+      // The card hid injunctive relief: its quote alone was too short to verify.
+      penalties: [
+        {
+          text: "In a civil action: injunctive relief, damages (the greater of actual damages or $1,000 per violation), and reasonable attorney's fees and costs.",
+          quote:
+            "may bring a civil action to recover all of the following relief: (a) Injunctive relief. (b) Damages in an amount equal to the greater of actual damages or one thousand dollars ($1,000) per violation. (c) Reasonable attorney’s fees and costs.",
+        },
+        {
+          text: "These remedies add to any under other law.",
+          quote:
+            "The duties, remedies, and obligations imposed by this chapter are cumulative to the duties, remedies, or obligations imposed under other law",
+        },
+      ],
+      curePeriod: notStated(NO_CURE_PERIOD),
+    },
     dutyOverrides: {
       3: {
         requiresFeature: { feature: "chatbot_used_by_minors", reason: "Applies to users the operator knows are minors" },
@@ -352,6 +515,11 @@ export const LAW_RULES: LawRule[] = [
     effectiveDate: "2026-01-01",
     basis: ["ca-ab2013/coveredParties/0", "ca-ab2013/triggers/0", "ca-ab2013/obligations/0"],
     extracted: true,
+    reviewedFacts: {
+      enforcedBy: notStated(NO_ENFORCER),
+      penalties: notStated(NO_PENALTY),
+      curePeriod: notStated(NO_CURE_PERIOD),
+    },
     dutyOverrides: {
       1: { notADuty: "An exemption list, not a duty", note: 'Quote: "A developer shall not be required to post..."' },
     },
@@ -367,6 +535,31 @@ export const LAW_RULES: LawRule[] = [
     effectiveDateFromPrd: true,
     basis: ["ca-sb53/coveredParties/0", "ca-sb53/coveredParties/1", "ca-sb53/triggers/0", "ca-sb53/triggers/4"],
     extracted: true,
+    reviewedFacts: {
+      enforcedBy: [
+        {
+          text: "Civil penalties can be recovered only in a civil action brought by the Attorney General.",
+          quote: "A civil penalty described in this section shall be recovered in a civil action brought only by the Attorney General.",
+        },
+        {
+          text: "In a civil action or administrative proceeding under the whistleblower section, a covered employee may ask a superior court for temporary or preliminary injunctive relief.",
+          quote:
+            "In a civil action or administrative proceeding brought pursuant to this section, a covered employee may petition the superior court in any county wherein the violation in question is alleged to have occurred, or wherein the person resides or transacts business, for appropriate temporary or preliminary injunctive relief.",
+        },
+      ],
+      penalties: [
+        {
+          text: "A large frontier developer faces a civil penalty based on severity, up to $1,000,000 per violation, for failing to publish or send a required document, a false statement covered by Section 22757.12(e), failing to report an incident, or not following its own frontier AI framework.",
+          quote:
+            "A large frontier developer that fails to publish or transmit a compliant document required to be published or transmitted under this chapter, makes a statement in violation of subdivision (e) of Section 22757.12, fails to report an incident as required by Section 22757.13, or fails to comply with its own frontier AI framework shall be subject to a civil penalty in an amount dependent upon the severity of the violation that does not exceed one million dollars ($1,000,000) per violation.",
+        },
+        {
+          text: "In a successful action under the whistleblower section, the court may award reasonable attorney's fees to the plaintiff.",
+          quote: "The court is authorized to award reasonable attorney’s fees to a plaintiff who brings a successful action for a violation of this section.",
+        },
+      ],
+      curePeriod: notStated(NO_CURE_PERIOD),
+    },
     dutyOverrides: {
       0: LARGE_FRONTIER_ONLY,
       1: LARGE_FRONTIER_ONLY,
@@ -409,6 +602,41 @@ export const LAW_RULES: LawRule[] = [
     // points to another chapter's date.
     basis: ["ny-raise/coveredParties/1", "ny-raise/coveredParties/5", "ny-raise/triggers/0", "ny-raise/triggers/5"],
     extracted: true,
+    reviewedFacts: {
+      enforcedBy: [
+        {
+          text: "The Attorney General can bring a civil action to recover civil penalties.",
+          quote: "The attorney general may bring a civil action to recover a civil penalty",
+        },
+        {
+          text: "An office within the Department of Financial Services can levy civil penalties, fees and costs after notice and hearing, for disclosure and assessment failures.",
+          quote:
+            '"Office" means an office within the department of financial services ... without a current disclosure filed with the office as required by this section, submits false information in its disclosure or fails to timely pay any assessment required by this article, in addition to any other penalty or liability that may be imposed under this article, the office may, after notice and hearing, levy civil penalties, fees, and costs',
+        },
+        {
+          text: "No private right of action.",
+          quote:
+            "Nothing in this article shall be construed to establish, authorize or create a private right of action associated with violations of this article.",
+        },
+      ],
+      penalties: [
+        {
+          text: "A large frontier developer faces a civil penalty based on severity, up to $1 million for a first violation and up to $3 million per subsequent violation, for failing to publish or send a required document, a false statement covered by § 1421(4), failing to report an incident, or not following its own frontier AI framework.",
+          quote:
+            "The attorney general may bring a civil action to recover a civil penalty in an amount not to exceed one million dollars for a first violation and in an amount not to exceed three million dollars per subsequent violation, determined based on the severity of the violation where a large frontier developer fails to publish or transmit a compliant document required to be published or transmitted under this article, makes a statement in violation of subdivision four of section fourteen hundred twenty-one of this article, fails to report an incident as required by section fourteen hundred twenty-two of this article, or fails to comply with its own frontier AI framework.",
+        },
+        {
+          text: "The office can levy $1,000 per day for failing to file a disclosure or correct false information.",
+          quote:
+            "a civil penalty of one thousand dollars for each day the entity fails to file a disclosure as required by this section or fails to correct false information",
+        },
+        {
+          text: "The office can also levy an amount equal to the assessments owed.",
+          quote: "an amount equal to the assessments owed",
+        },
+      ],
+      curePeriod: notStated(NO_CURE_PERIOD),
+    },
     dutyOverrides: {
       0: LARGE_FRONTIER_ONLY,
       1: LARGE_FRONTIER_ONLY,
@@ -428,9 +656,12 @@ export const LAW_RULES: LawRule[] = [
 
 export const LAW_RULES_BY_ID: Record<string, LawRule> = Object.fromEntries(LAW_RULES.map((r) => [r.lawId, r]));
 
-/** A law's reviewed enforcement items, shaped like rule-card items. Undefined = use the card's. */
-export function reviewedEnforcedBy(rule: LawRule): RuleItem[] | undefined {
-  return rule.enforcedByOverride?.map((f) => ({ ...f, verified: true, chunks: [] }));
+/**
+ * A field's reviewed items, shaped like rule-card items. Undefined = use the
+ * card's. An empty quote marks a "not stated in the law text" line.
+ */
+export function reviewedItems(rule: LawRule, field: RuleField): RuleItem[] | undefined {
+  return rule.reviewedFacts?.[field]?.map((f) => ({ text: f.text, quote: f.quote ?? "", verified: true, chunks: [] }));
 }
 
 /** Resolve a "lawId/field/index" rule-card item id. */

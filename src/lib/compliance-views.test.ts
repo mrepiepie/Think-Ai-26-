@@ -59,7 +59,7 @@ describe("listLawsView", () => {
 describe("ruleCardView", () => {
   it("returns only verified items and counts the hidden ones", () => {
     const view = ruleCardView("ca-sb53");
-    assert.equal(view.verified_items, 89);
+    assert.equal(view.verified_items, 88);
     assert.equal(view.unverified_hidden, 2);
     const obligations = (view as unknown as Record<string, { id: string; quote: string; official_url: string }[]>).obligations;
     const ids = obligations.map((o) => o.id);
@@ -90,9 +90,15 @@ describe("SB 243 enforcement in the MCP views", () => {
     assert.ok(matches.some((m) => m.id === "ca-sb243/enforcedBy/reviewed-0"));
     assert.equal(searchLaws({ query: "enforces reporting", lawId: "ca-sb243" }).total_matches, 0);
   });
-  it("other laws keep their rule-card ids", () => {
-    const view = ruleCardView("tx-traiga") as unknown as { enforcedBy: { id: string }[] };
-    assert.ok(view.enforcedBy.every((i) => /^tx-traiga\/enforcedBy\/\d+$/.test(i.id)));
+  it("other fields keep their rule-card ids", () => {
+    const view = ruleCardView("tx-traiga") as unknown as { obligations: { id: string }[] };
+    assert.ok(view.obligations.every((i) => /^tx-traiga\/obligations\/\d+$/.test(i.id)));
+  });
+  it('AB 2013: "not stated" lines come back with no quote and never appear in search', () => {
+    const view = ruleCardView("ca-ab2013") as unknown as { penalties: { text: string; quote?: string }[] };
+    assert.deepEqual(view.penalties.map((p) => p.text), ["No penalty stated in the law text"]);
+    assert.equal(view.penalties[0].quote, undefined);
+    assert.equal(searchLaws({ query: "no penalty stated", lawId: "ca-ab2013" }).total_matches, 0);
   });
 });
 
